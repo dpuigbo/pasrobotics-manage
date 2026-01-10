@@ -15,9 +15,9 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: "8.3.17"
           tools: composer:v2
-          extensions: mbstring, pdo_mysql, openssl, tokenizer, xml, ctype, json
+          extensions: mbstring, pdo_mysql, openssl, tokenizer, xml, ctype, json, intl, zip
 
       - name: Install dependencies (prod)
         run: |
