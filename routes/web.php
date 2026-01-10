@@ -7,4 +7,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/health', fn () => 'OK');
+Route::get('/health', fn () => 'NOK NANU');
