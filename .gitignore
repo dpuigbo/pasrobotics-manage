@@ -1,0 +1,16 @@
+/.env
+/vendor
+/node_modules
+/public/build
+
+/storage/*
+!/storage/.gitignore
+!/storage/app/.gitignore
+!/storage/framework/.gitignore
+!/storage/logs/.gitignore
+
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+
+/.idea
+/.vscode
