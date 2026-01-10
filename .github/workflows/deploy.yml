@@ -68,7 +68,7 @@ jobs:
           scp -P ${SSH_PORT} app.tar.gz ${SSH_USER}@${SSH_HOST}:~/app.tar.gz
           scp -P ${SSH_PORT} public.tar.gz ${SSH_USER}@${SSH_HOST}:~/public.tar.gz
 
-            - name: Deploy on server + migrate
+      - name: Deploy on server + migrate
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
