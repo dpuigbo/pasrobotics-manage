@@ -68,17 +68,21 @@ jobs:
           scp -P ${SSH_PORT} app.tar.gz ${SSH_USER}@${SSH_HOST}:~/app.tar.gz
           scp -P ${SSH_PORT} public.tar.gz ${SSH_USER}@${SSH_HOST}:~/public.tar.gz
 
-      - name: Deploy on server + migrate
+            - name: Deploy on server + migrate
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
           ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} << 'EOF'
-            set -e
+            set -euo pipefail
 
             APP_DIR="$HOME/app_core"
             WEB_DIR="$HOME/domains/pasrobotics.com/public_html/manage"
+
+            echo "APP_DIR=$APP_DIR"
+            echo "WEB_DIR=$WEB_DIR"
+            echo "PWD (start)=$(pwd)"
 
             # --- Deploy app_core (sin tocar .env ni storage) ---
             mkdir -p "$APP_DIR"
@@ -87,8 +91,18 @@ jobs:
             # Limpia todo menos .env y storage
             find . -mindepth 1 -maxdepth 1 ! -name '.env' ! -name 'storage' -exec rm -rf {} +
 
+            echo "Extracting app.tar.gz into $APP_DIR"
             tar -xzf "$HOME/app.tar.gz" -C "$APP_DIR"
             rm -f "$HOME/app.tar.gz"
+
+            echo "Listing APP_DIR after extract:"
+            ls -la "$APP_DIR"
+
+            if [ ! -f "$APP_DIR/artisan" ]; then
+              echo "ERROR: artisan not found at $APP_DIR/artisan"
+              echo "Maybe the tarball doesn't include the project root."
+              exit 1
+            fi
 
             # --- Deploy public (sin tocar index.php ni .htaccess) ---
             mkdir -p "$WEB_DIR"
@@ -97,6 +111,7 @@ jobs:
             # Limpia todo menos index.php y .htaccess
             find . -mindepth 1 -maxdepth 1 ! -name 'index.php' ! -name '.htaccess' -exec rm -rf {} +
 
+            echo "Extracting public.tar.gz into $WEB_DIR"
             tar -xzf "$HOME/public.tar.gz" -C "$WEB_DIR"
             rm -f "$HOME/public.tar.gz"
 
@@ -110,6 +125,8 @@ jobs:
 
             echo "Using PHP: $($PHPBIN -v | head -n 1)"
 
+            # Asegurar dirs escribibles
+            cd "$APP_DIR"
             mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache
             chmod -R 775 storage bootstrap/cache || true
 
