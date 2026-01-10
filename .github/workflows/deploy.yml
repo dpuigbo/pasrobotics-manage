@@ -19,6 +19,13 @@ jobs:
           tools: composer:v2
           extensions: mbstring, pdo_mysql, openssl, tokenizer, xml, ctype, json, intl, zip, curl, fileinfo
 
+      - name: Prepare Laravel dirs for CI
+        run: |
+          mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache
+          chmod -R 777 storage bootstrap/cache
+          cp -n .env.example .env || true
+          php artisan key:generate --ansi || true
+
       - name: Install dependencies (prod)
         run: |
           composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
