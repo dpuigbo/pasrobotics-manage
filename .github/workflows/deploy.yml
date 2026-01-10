@@ -15,13 +15,19 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3.17"
+          php-version: "8.3"
           tools: composer:v2
-          extensions: mbstring, pdo_mysql, openssl, tokenizer, xml, ctype, json, intl, zip
+          extensions: mbstring, pdo_mysql, openssl, tokenizer, xml, ctype, json, intl, zip, curl, fileinfo
 
       - name: Install dependencies (prod)
         run: |
           composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+
+      # Si usas Vite/Node para assets, descomenta:
+      # - name: Build assets
+      #   run: |
+      #     npm ci
+      #     npm run build
 
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
@@ -33,44 +39,82 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy core to ~/app_core (rsync)
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USER: ${{ secrets.SSH_USER }}
+      - name: Pack app (tar)
         run: |
-          rsync -az --delete \
+          tar -czf app.tar.gz \
             --exclude=".git" \
             --exclude=".github" \
             --exclude=".env" \
             --exclude="node_modules" \
             --exclude="storage" \
             --exclude="bootstrap/cache" \
-            -e "ssh -p ${SSH_PORT}" \
-            ./ ${SSH_USER}@${SSH_HOST}:~/app_core/
+            --exclude="public" \
+            .
 
-      - name: Deploy public assets to docroot (rsync)
+      - name: Pack public (tar)
+        run: |
+          tar -czf public.tar.gz -C public \
+            --exclude="index.php" \
+            --exclude=".htaccess" \
+            .
+
+      - name: Upload tarballs (scp)
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
-          rsync -az --delete \
-            --exclude="index.php" \
-            --exclude=".htaccess" \
-            -e "ssh -p ${SSH_PORT}" \
-            ./public/ ${SSH_USER}@${SSH_HOST}:~/public_html/manage/
+          scp -P ${SSH_PORT} app.tar.gz ${SSH_USER}@${SSH_HOST}:~/app.tar.gz
+          scp -P ${SSH_PORT} public.tar.gz ${SSH_USER}@${SSH_HOST}:~/public.tar.gz
 
-      - name: Run migrations + clear cache on server
+      - name: Deploy on server + migrate
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
           ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} << 'EOF'
+            set -e
+
+            # --- Deploy app_core (sin tocar .env ni storage) ---
+            mkdir -p ~/app_core
             cd ~/app_core
+
+            # Limpia todo menos .env y storage
+            find . -mindepth 1 -maxdepth 1 ! -name '.env' ! -name 'storage' -exec rm -rf {} +
+
+            tar -xzf ~/app.tar.gz -C ~/app_core
+            rm -f ~/app.tar.gz
+
+            # --- Deploy public (sin tocar index.php ni .htaccess) ---
+            mkdir -p ~/public_html/manage
+            cd ~/public_html/manage
+
+            # Limpia todo menos index.php y .htaccess
+            find . -mindepth 1 -maxdepth 1 ! -name 'index.php' ! -name '.htaccess' -exec rm -rf {} +
+
+            tar -xzf ~/public.tar.gz -C ~/public_html/manage
+            rm -f ~/public.tar.gz
+
+            # --- Elegir PHP 8.3 para artisan (CLI a veces no coincide en Hostinger) ---
+            PHPBIN=php
+            if ! php -v | grep -q "PHP 8\.3"; then
+              for c in php83 php8.3 php8; do
+                if command -v "$c" >/dev/null 2>&1; then PHPBIN="$c"; break; fi
+              done
+            fi
+
+            echo "Using PHP: $($PHPBIN -v | head -n 1)"
+
             mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache
             chmod -R 775 storage bootstrap/cache || true
-            php artisan migrate --force
-            php artisan optimize:clear
+
+            # Enlace storage (si no existe)
+            $PHPBIN artisan storage:link || true
+
+            # Filament assets (por si el panel se ve “desordenado” por assets)
+            $PHPBIN artisan filament:assets || true
+
+            $PHPBIN artisan migrate --force
+            $PHPBIN artisan optimize:clear
           EOF
