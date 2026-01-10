@@ -30,12 +30,6 @@ jobs:
         run: |
           composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
-      # Si usas Vite/Node para assets, descomenta:
-      # - name: Build assets
-      #   run: |
-      #     npm ci
-      #     npm run build
-
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -48,7 +42,7 @@ jobs:
 
       - name: Pack app (tar)
         run: |
-          tar -czf app.tar.gz \
+          tar --warning=no-file-changed --ignore-failed-read -czf app.tar.gz \
             --exclude=".git" \
             --exclude=".github" \
             --exclude=".env" \
@@ -83,27 +77,30 @@ jobs:
           ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} << 'EOF'
             set -e
 
+            APP_DIR="$HOME/app_core"
+            WEB_DIR="$HOME/domains/pasrobotics.com/public_html/manage"
+
             # --- Deploy app_core (sin tocar .env ni storage) ---
-            mkdir -p ~/app_core
-            cd ~/app_core
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
 
             # Limpia todo menos .env y storage
             find . -mindepth 1 -maxdepth 1 ! -name '.env' ! -name 'storage' -exec rm -rf {} +
 
-            tar -xzf ~/app.tar.gz -C ~/app_core
-            rm -f ~/app.tar.gz
+            tar -xzf "$HOME/app.tar.gz" -C "$APP_DIR"
+            rm -f "$HOME/app.tar.gz"
 
             # --- Deploy public (sin tocar index.php ni .htaccess) ---
-            mkdir -p ~/public_html/manage
-            cd ~/public_html/manage
+            mkdir -p "$WEB_DIR"
+            cd "$WEB_DIR"
 
             # Limpia todo menos index.php y .htaccess
             find . -mindepth 1 -maxdepth 1 ! -name 'index.php' ! -name '.htaccess' -exec rm -rf {} +
 
-            tar -xzf ~/public.tar.gz -C ~/public_html/manage
-            rm -f ~/public.tar.gz
+            tar -xzf "$HOME/public.tar.gz" -C "$WEB_DIR"
+            rm -f "$HOME/public.tar.gz"
 
-            # --- Elegir PHP 8.3 para artisan (CLI a veces no coincide en Hostinger) ---
+            # --- Elegir PHP 8.3 para artisan (CLI a veces no coincide) ---
             PHPBIN=php
             if ! php -v | grep -q "PHP 8\.3"; then
               for c in php83 php8.3 php8; do
@@ -116,10 +113,7 @@ jobs:
             mkdir -p storage/framework/{cache,sessions,views} bootstrap/cache
             chmod -R 775 storage bootstrap/cache || true
 
-            # Enlace storage (si no existe)
             $PHPBIN artisan storage:link || true
-
-            # Filament assets (por si el panel se ve “desordenado” por assets)
             $PHPBIN artisan filament:assets || true
 
             $PHPBIN artisan migrate --force
