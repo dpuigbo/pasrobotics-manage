@@ -18,15 +18,16 @@ class SystemsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('name')
+            ->recordTitleAttribute('display_name')
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('Sistema')->searchable(),
-                Tables\Columns\TextColumn::make('updated_at')->label('Actualizado')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
+                Tables\Columns\TextColumn::make('display_name')->label('Sistema')->searchable(),
             ])
             ->headerActions([
                 Tables\Actions\AttachAction::make()
                     ->label('Añadir sistema existente')
-                    ->preloadRecordSelect(),
+                    ->preloadRecordSelect()
+                    ->recordTitleAttribute('display_name'),
             ])
             ->actions([
                 Tables\Actions\Action::make('createReport')

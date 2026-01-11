@@ -30,4 +30,14 @@ class System extends Model
         return $this->belongsToMany(\App\Models\Intervention::class, 'intervention_systems')
             ->withTimestamps();
     }
+
+    public function getDisplayNameAttribute(): string
+    {
+        $name = $this->name
+            ?? $this->label
+            ?? $this->code
+            ?? 'Sistema';
+
+        return "{$name} (#{$this->id})";
+    }
 }
