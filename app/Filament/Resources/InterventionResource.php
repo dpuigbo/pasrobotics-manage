@@ -22,7 +22,12 @@ class InterventionResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('client_name')->label('Cliente')->maxLength(150),
+            Forms\Components\Select::make('client_id')
+                ->label('Cliente')
+                ->relationship('client', 'name')
+                ->searchable()
+                ->preload()
+                ->required(),
             Forms\Components\Select::make('type')->label('Tipo')->required()->options([
                 'preventive' => 'Preventivo',
                 'corrective' => 'Correctivo',

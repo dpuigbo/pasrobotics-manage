@@ -27,4 +27,10 @@ class Intervention extends Model
     {
         return $this->hasMany(Report::class);
     }
+
+    public function client()
+    {
+        return $this->belongsTo(\App\Models\Client::class);
+    }
+
 }
