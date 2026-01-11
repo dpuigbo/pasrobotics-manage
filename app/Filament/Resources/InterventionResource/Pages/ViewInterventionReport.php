@@ -4,19 +4,24 @@ namespace App\Filament\Resources\InterventionResource\Pages;
 
 use App\Filament\Resources\InterventionResource;
 use App\Models\Intervention;
-use Filament\Resources\Pages\Page;
+use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Database\Eloquent\Model;
 
-class ViewInterventionReport extends Page
+class ViewInterventionReport extends ViewRecord
 {
     protected static string $resource = InterventionResource::class;
+
     protected static string $view = 'filament.resources.intervention-resource.pages.report';
 
-    public Intervention $record;
-
-    public function mount(int|string $record): void
+    protected function resolveRecord($key): Model
     {
-        $this->record = Intervention::query()
-            ->with(['system', 'components.templateVersion.template'])
-            ->findOrFail($record);
+        return Intervention::query()
+            ->with([
+                'system.controllerUnit.controllerModel',
+                'system.mechanicalUnits.robotModel',
+                'system.driveUnits.driveUnitModel',
+                'components.templateVersion.template',
+            ])
+            ->findOrFail($key);
     }
 }
