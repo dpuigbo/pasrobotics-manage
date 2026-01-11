@@ -82,8 +82,28 @@ class InterventionComposer
             $order += 10;
         }
 
-        // 4) Drive units
-        foreach ($system->driveUnits as $du) {
+        // 4) Drive units (auto-assign si no están asignadas)
+        $mechanicals = $system->mechanicalUnits->sortBy('id')->values();
+        $drives = $system->driveUnits->sortBy('id')->values();
+
+        // IDs de mecánicas ya asignadas
+        $alreadyAssigned = $drives->pluck('system_mechanical_unit_id')->filter()->values()->all();
+
+        // Candidatas: desde la 2ª unidad mecánica
+        $candidates = $mechanicals->slice(1)->reject(fn ($mu) => in_array($mu->id, $alreadyAssigned))->values();
+
+        $idx = 0;
+        foreach ($drives as $du) {
+            if (!$du->system_mechanical_unit_id && isset($candidates[$idx])) {
+                $du->system_mechanical_unit_id = $candidates[$idx]->id;
+                $du->save();
+                $idx++;
+            }
+        }
+
+        $mechanicalById = $mechanicals->keyBy('id');
+
+        foreach ($system->driveUnits()->orderBy('id')->get() as $du) {
             $tv = $this->resolveTemplateVersion(
                 'drive_unit',
                 robotModelId: null,
@@ -92,10 +112,21 @@ class InterventionComposer
                 allowNull: false
             );
 
+            $muLabel = null;
+            if ($du->system_mechanical_unit_id && $mechanicalById->has($du->system_mechanical_unit_id)) {
+                $mu = $mechanicalById[$du->system_mechanical_unit_id];
+                $muLabel = $mu->label ?: ('Unidad mecánica #' . $mu->id);
+            }
+
+            $label = $du->label ?: 'Drive Unit';
+            if ($muLabel) {
+                $label .= " → {$muLabel}";
+            }
+
             $this->createComponent(
                 intervention: $intervention,
                 componentType: 'drive_unit',
-                label: $du->label ?: 'Drive Unit',
+                label: $label,
                 sort: $order,
                 templateVersion: $tv,
                 sysControllerId: null,
@@ -104,6 +135,7 @@ class InterventionComposer
             );
             $order += 10;
         }
+
     }
 
     private function resolveTemplateVersion(

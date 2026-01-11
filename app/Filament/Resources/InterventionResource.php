@@ -64,13 +64,20 @@ class InterventionResource extends Resource
             Tables\Columns\TextColumn::make('updated_at')->label('Actualizado')->dateTime()->sortable(),
         ])->actions([
             Tables\Actions\EditAction::make(),
+            Tables\Actions\Action::make('report')
+                ->label('Informe')
+                ->icon('heroicon-o-printer')
+                ->url(fn (Intervention $record) => static::getUrl('report', ['record' => $record]))
+                ->openUrlInNewTab(),
         ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageInterventions::route('/'),
+            'index'  => Pages\ManageInterventions::route('/'),
+            'report' => Pages\ViewInterventionReport::route('/{record}/report'),
         ];
     }
+
 }
