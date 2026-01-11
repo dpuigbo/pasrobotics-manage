@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\InterventionResource\RelationManagers;
 
+use Filament\Forms\Components\Select;
+use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ReportResource;
 use App\Models\Report;
 use App\Services\ReportComposer;
@@ -18,16 +20,29 @@ class SystemsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('display_name')
+            ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
-                Tables\Columns\TextColumn::make('display_name')->label('Sistema')->searchable(),
+                Tables\Columns\TextColumn::make('name')->label('Sistema')->searchable()->formatStateUsing(fn ($state, $record) => "{$record->name} (#{$record->id})"),
             ])
             ->headerActions([
                 Tables\Actions\AttachAction::make()
                     ->label('Añadir sistema existente')
                     ->preloadRecordSelect()
-                    ->recordTitleAttribute('display_name'),
+                    ->recordTitleAttribute('name')
+                    ->recordSelect(function (Select $select) {
+                        return $select
+                            ->searchable()
+                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} (#{$record->id})");
+                    })
+                    ->recordSelectOptionsQuery(function (Builder $query) {
+                        $intervention = $this->getOwnerRecord();
+
+                        // Si la intervención ya tiene client_id, solo muestra sistemas de ese cliente.
+                        // Si aún NO tienes client_id en interventions, comenta esta línea.
+                        return $query->where('client_id', $intervention->client_id)
+                            ->orderBy('name');
+                    }),
             ])
             ->actions([
                 Tables\Actions\Action::make('createReport')
