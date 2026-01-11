@@ -6,11 +6,11 @@ use App\Filament\Resources\ReportResource;
 use App\Models\Report;
 use App\Services\ReportComposer;
 use Filament\Notifications\Notification;
-use Filament\Resources\RelationManagers\BelongsToManyRelationManager;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class SystemsRelationManager extends BelongsToManyRelationManager
+class SystemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'systems';
     protected static ?string $title = 'Sistemas en esta intervención';
@@ -18,6 +18,7 @@ class SystemsRelationManager extends BelongsToManyRelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->recordTitleAttribute('name')
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('Sistema')->searchable(),
                 Tables\Columns\TextColumn::make('updated_at')->label('Actualizado')->dateTime()->sortable(),
@@ -46,39 +47,44 @@ class SystemsRelationManager extends BelongsToManyRelationManager
 
                         app(ReportComposer::class)->compose($report);
 
-                        Notification::make()->success()->title('Informe creado')->send();
+                        Notification::make()
+                            ->success()
+                            ->title('Informe creado')
+                            ->send();
                     }),
 
                 Tables\Actions\Action::make('fill')
                     ->label('Rellenar')
                     ->icon('heroicon-o-pencil-square')
+                    ->visible(fn ($record) => Report::where('intervention_id', $this->getOwnerRecord()->id)
+                        ->where('system_id', $record->id)
+                        ->exists())
                     ->url(function ($record) {
                         $intervention = $this->getOwnerRecord();
                         $report = Report::where('intervention_id', $intervention->id)
                             ->where('system_id', $record->id)
-                            ->first();
+                            ->firstOrFail();
 
-                        return $report
-                            ? ReportResource::getUrl('fill', ['record' => $report->id])
-                            : null;
-                    })
-                    ->disabled(fn ($record) => !Report::where('intervention_id', $this->getOwnerRecord()->id)->where('system_id', $record->id)->exists()),
+                        return ReportResource::getUrl('fill', ['record' => $report->id]);
+                    }),
 
                 Tables\Actions\Action::make('report')
                     ->label('Informe')
                     ->icon('heroicon-o-printer')
                     ->openUrlInNewTab()
+                    ->visible(fn ($record) => Report::where('intervention_id', $this->getOwnerRecord()->id)
+                        ->where('system_id', $record->id)
+                        ->exists())
                     ->url(function ($record) {
                         $intervention = $this->getOwnerRecord();
                         $report = Report::where('intervention_id', $intervention->id)
                             ->where('system_id', $record->id)
-                            ->first();
+                            ->firstOrFail();
 
-                        return $report
-                            ? ReportResource::getUrl('report', ['record' => $report->id])
-                            : null;
-                    })
-                    ->disabled(fn ($record) => !Report::where('intervention_id', $this->getOwnerRecord()->id)->where('system_id', $record->id)->exists()),
+                        return ReportResource::getUrl('report', ['record' => $report->id]);
+                    }),
+
+                Tables\Actions\DetachAction::make()->label('Quitar'),
             ])
             ->bulkActions([
                 Tables\Actions\DetachBulkAction::make(),
