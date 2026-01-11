@@ -17,9 +17,9 @@ class Intervention extends Model
         'end_at' => 'datetime',
     ];
 
-    public function systems(): BelongsToMany
+    public function systems(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(System::class, 'intervention_systems')
+        return $this->belongsToMany(\App\Models\System::class, 'intervention_systems')
             ->withTimestamps();
     }
 

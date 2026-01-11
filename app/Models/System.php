@@ -24,4 +24,10 @@ class System extends Model
     {
         return $this->hasMany(SystemDriveUnit::class);
     }
+
+    public function interventions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(\App\Models\Intervention::class, 'intervention_systems')
+            ->withTimestamps();
+    }
 }
