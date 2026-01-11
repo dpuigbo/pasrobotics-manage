@@ -8,6 +8,7 @@ use Filament\Resources\Pages\ManageRecords;
 class ManageInterventionComponents extends ManageRecords
 {
     protected static string $resource = InterventionComponentResource::class;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected function canCreate(): bool
     {

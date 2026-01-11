@@ -3,32 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Visit;
 
 class Intervention extends Model
 {
     protected $fillable = [
-        'system_id','type','status','reference','title','performed_at','notes'
+        'client_name','type','status','reference','title','start_at','end_at','notes'
     ];
 
     protected $casts = [
-        'performed_at' => 'datetime',
+        'start_at' => 'datetime',
+        'end_at' => 'datetime',
     ];
 
-    public function system(): BelongsTo
+    public function systems(): BelongsToMany
     {
-        return $this->belongsTo(System::class);
+        return $this->belongsToMany(System::class, 'intervention_systems')
+            ->withTimestamps();
     }
 
-    public function components(): HasMany
+    public function reports(): HasMany
     {
-        return $this->hasMany(InterventionComponent::class)->orderBy('sort_order');
-    }
-
-    public function visit(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(\App\Models\Visit::class, 'visit_id');
+        return $this->hasMany(Report::class);
     }
 }

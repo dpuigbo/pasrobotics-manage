@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InterventionResource\Pages;
+use App\Filament\Resources\InterventionResource\RelationManagers\SystemsRelationManager;
 use App\Models\Intervention;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,81 +15,60 @@ class InterventionResource extends Resource
 {
     protected static ?string $model = Intervention::class;
     protected static ?string $navigationGroup = 'Intervenciones';
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
-    protected static ?string $modelLabel = 'Informe';
-    protected static ?string $pluralModelLabel = 'Informes';
+    protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static ?string $modelLabel = 'Intervención';
+    protected static ?string $pluralModelLabel = 'Intervenciones';
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('system_id')
-                ->label('Sistema')
-                ->relationship('system', 'name')
-                ->searchable()
-                ->preload()
-                ->required(),
+            Forms\Components\TextInput::make('client_name')->label('Cliente')->maxLength(150),
+            Forms\Components\Select::make('type')->label('Tipo')->required()->options([
+                'preventive' => 'Preventivo',
+                'corrective' => 'Correctivo',
+            ]),
+            Forms\Components\Select::make('status')->label('Estado')->required()->options([
+                'draft' => 'Borrador',
+                'in_progress' => 'En curso',
+                'closed' => 'Cerrada',
+            ])->default('draft'),
 
-            Forms\Components\Select::make('type')
-                ->label('Tipo')
-                ->required()
-                ->options([
-                    'preventive' => 'Preventivo',
-                    'corrective' => 'Correctivo',
-                ]),
-
-            Forms\Components\Select::make('status')
-                ->label('Estado')
-                ->required()
-                ->options([
-                    'draft' => 'Borrador',
-                    'finalized' => 'Finalizado',
-                    'delivered' => 'Entregado',
-                ])
-                ->default('draft'),
-
-            Forms\Components\DateTimePicker::make('performed_at')->label('Fecha/Hora intervención'),
             Forms\Components\TextInput::make('reference')->label('Referencia')->maxLength(50),
             Forms\Components\TextInput::make('title')->label('Título')->maxLength(150),
 
-            Forms\Components\Textarea::make('notes')->label('Notas generales')->columnSpanFull(),
+            Forms\Components\DateTimePicker::make('start_at')->label('Inicio intervención'),
+            Forms\Components\DateTimePicker::make('end_at')->label('Fin intervención'),
+
+            Forms\Components\Textarea::make('notes')->label('Notas')->columnSpanFull(),
         ])->columns(2);
     }
 
     public static function table(Table $table): Table
     {
         return $table->columns([
-            Tables\Columns\TextColumn::make('system.name')->label('Sistema')->searchable(),
+            Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
+            Tables\Columns\TextColumn::make('client_name')->label('Cliente')->searchable(),
             Tables\Columns\TextColumn::make('type')->label('Tipo')->sortable(),
             Tables\Columns\TextColumn::make('status')->label('Estado')->sortable(),
-            Tables\Columns\TextColumn::make('performed_at')->label('Fecha')->dateTime()->sortable(),
+            Tables\Columns\TextColumn::make('start_at')->label('Inicio')->dateTime()->sortable(),
+            Tables\Columns\TextColumn::make('end_at')->label('Fin')->dateTime()->sortable(),
             Tables\Columns\TextColumn::make('updated_at')->label('Actualizado')->dateTime()->sortable(),
         ])->actions([
-            Tables\Actions\Action::make('fill')
-                ->label('Rellenar')
-                ->icon('heroicon-o-pencil-square')
-                ->url(fn (\App\Models\Intervention $record) =>
-                    static::getUrl('fill', ['record' => $record->getKey()])
-                ),
-
-            Tables\Actions\Action::make('report')
-                ->label('Informe')
-                ->icon('heroicon-o-printer')
-                ->url(fn (\App\Models\Intervention $record) =>
-                    static::getUrl('report', ['record' => $record->getKey()])
-                )
-                ->openUrlInNewTab(),
-
             Tables\Actions\EditAction::make(),
-        ]);
+        ])->defaultSort('id', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [SystemsRelationManager::class];
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ManageInterventions::route('/'),
-            'fill'   => Pages\FillInterventionReport::route('/{record}/fill'),
-            'report' => Pages\ViewInterventionReport::route('/{record}/report'),
+            'index' => Pages\ListInterventions::route('/'),
+            'create' => Pages\CreateIntervention::route('/create'),
+            'edit' => Pages\EditIntervention::route('/{record}/edit'),
         ];
     }
-
 }
