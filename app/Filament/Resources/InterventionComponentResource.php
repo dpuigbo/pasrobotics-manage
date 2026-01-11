@@ -21,7 +21,7 @@ class InterventionComponentResource extends Resource
     protected static ?string $pluralModelLabel = 'Componentes de informe';
 
     // Si luego quieres ocultarlo del menú, cambia a false
-    // protected static bool $shouldRegisterNavigation = false;
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {

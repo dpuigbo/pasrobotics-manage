@@ -54,10 +54,10 @@ class VisitResource extends Resource
                 ->label('Sistemas incluidos')
                 ->multiple()
                 ->required()
-                ->options(fn () => System::query()->orderBy('name')->pluck('name', 'id')->toArray())
+                ->options(fn () => \App\Models\System::query()->orderBy('name')->pluck('name', 'id')->toArray())
                 ->searchable()
                 ->preload()
-                ->helperText('Se creará un informe por cada sistema.'),
+                ->visibleOn('create'),
 
             Forms\Components\Textarea::make('notes')->label('Notas generales')->columnSpanFull(),
         ])->columns(2);
@@ -81,7 +81,9 @@ class VisitResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageVisits::route('/'),
+            'index'  => Pages\ListVisits::route('/'),
+            'create' => Pages\CreateVisit::route('/create'),
+            'edit'   => Pages\EditVisit::route('/{record}/edit'),
         ];
     }
 
