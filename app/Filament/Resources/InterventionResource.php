@@ -28,6 +28,7 @@ class InterventionResource extends Resource
                 ->searchable()
                 ->preload()
                 ->required(),
+
             Forms\Components\Select::make('type')->label('Tipo')->required()->options([
                 'preventive' => 'Preventivo',
                 'corrective' => 'Correctivo',
@@ -41,10 +42,18 @@ class InterventionResource extends Resource
             Forms\Components\TextInput::make('reference')->label('Referencia')->maxLength(50),
             Forms\Components\TextInput::make('title')->label('Título')->maxLength(150),
 
-            Forms\Components\DateTimePicker::make('start_at')->label('Inicio intervención'),
-            Forms\Components\DateTimePicker::make('end_at')->label('Fin intervención'),
+            Forms\Components\DateTimePicker::make('start_at')
+                ->label('Inicio')
+                ->required(),
 
-            Forms\Components\Textarea::make('notes')->label('Notas')->columnSpanFull(),
+            Forms\Components\DateTimePicker::make('end_at')
+                ->label('Fin')
+                ->required(),
+
+            Forms\Components\Textarea::make('notes')
+                ->label('Notas')
+                ->columnSpanFull(),
+
         ])->columns(2);
     }
 
@@ -52,7 +61,7 @@ class InterventionResource extends Resource
     {
         return $table->columns([
             Tables\Columns\TextColumn::make('id')->label('ID')->sortable(),
-            Tables\Columns\TextColumn::make('client_name')->label('Cliente')->searchable(),
+            Tables\Columns\TextColumn::make('client.name')->label('Cliente')->searchable(),
             Tables\Columns\TextColumn::make('type')->label('Tipo')->sortable(),
             Tables\Columns\TextColumn::make('status')->label('Estado')->sortable(),
             Tables\Columns\TextColumn::make('start_at')->label('Inicio')->dateTime()->sortable(),

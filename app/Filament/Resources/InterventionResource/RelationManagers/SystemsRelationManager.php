@@ -29,18 +29,17 @@ class SystemsRelationManager extends RelationManager
                 Tables\Actions\AttachAction::make()
                     ->label('Añadir sistema existente')
                     ->preloadRecordSelect()
-                    ->recordTitleAttribute('name')
-                    ->recordSelect(function (Select $select) {
-                        return $select
-                            ->searchable()
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name} (#{$record->id})");
-                    })
+                    ->recordTitleAttribute('display_name')
+                    ->disabled(fn () => blank($this->getOwnerRecord()->client_id))
                     ->recordSelectOptionsQuery(function (Builder $query) {
-                        $intervention = $this->getOwnerRecord();
+                        $clientId = $this->getOwnerRecord()->client_id;
 
-                        // Si la intervención ya tiene client_id, solo muestra sistemas de ese cliente.
-                        // Si aún NO tienes client_id en interventions, comenta esta línea.
-                        return $query->where('client_id', $intervention->client_id)
+                        // Si aún no hay cliente seleccionado, no mostramos nada
+                        if (blank($clientId)) {
+                            return $query->whereRaw('1=0');
+                        }
+
+                        return $query->where('client_id', $clientId)
                             ->orderBy('name');
                     }),
             ])
