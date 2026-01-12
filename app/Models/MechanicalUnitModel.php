@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 
-class DriveUnitModel extends ComponentModel
+class MechanicalUnitModel extends ComponentModel
 {
     protected static function booted(): void
     {
         static::addGlobalScope('type', function (Builder $builder) {
-            $builder->where('type', 'drive_unit');
+            $builder->where('type', 'mechanical_unit');
         });
     }
 }

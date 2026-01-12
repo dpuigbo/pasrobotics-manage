@@ -2,9 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
-class ControllerModel extends Model
+class ControllerModel extends ComponentModel
 {
-    protected $fillable = ['manufacturer','name','notes'];
+    protected static function booted(): void
+    {
+        static::addGlobalScope('type', function (Builder $builder) {
+            $builder->where('type', 'controller');
+        });
+    }
 }

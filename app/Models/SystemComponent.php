@@ -5,21 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ComponentModelTemplateVersion extends Model
+class SystemComponent extends Model
 {
-    protected $table = 'component_model_template_versions';
-
     protected $fillable = [
+        'system_id',
         'component_model_id',
-        'version',
-        'status',   // draft | active | deprecated
-        'schema',   // json
+        'role',          // mechanical_unit | controller | drive_unit
+        'label',         // editable (lo que pediste)
+        'serial_number',
+        'position',
         'notes',
     ];
 
-    protected $casts = [
-        'schema' => 'array',
-    ];
+    public function system(): BelongsTo
+    {
+        return $this->belongsTo(System::class);
+    }
 
     public function componentModel(): BelongsTo
     {

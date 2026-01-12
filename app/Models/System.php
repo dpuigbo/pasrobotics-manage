@@ -3,50 +3,43 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class System extends Model
 {
-    protected $fillable = ['client_id', 'name', 'manufacturer', 'notes'];
+    protected $fillable = [
+        'client_id',
+        'plant_id',
+        'machine_id',
+        'manufacturer',
+        'name',
+        'notes',
+    ];
 
-    public function controllerUnit(): HasOne
+    public function client(): BelongsTo
     {
-        return $this->hasOne(SystemControllerUnit::class);
+        return $this->belongsTo(Client::class);
     }
 
-    public function mechanicalUnits(): HasMany
+    public function plant(): BelongsTo
     {
-        return $this->hasMany(SystemMechanicalUnit::class);
+        return $this->belongsTo(Plant::class);
     }
 
-    public function plant() { return $this->belongsTo(Plant::class); }
-    
-    public function machine() { return $this->belongsTo(Machine::class); }
-
-    public function components()
+    public function machine(): BelongsTo
     {
-        return $this->hasMany(SystemComponent::class)->orderBy('position');
+        return $this->belongsTo(Machine::class);
     }
 
-    public function driveUnits(): HasMany
+    public function components(): HasMany
     {
-        return $this->hasMany(SystemDriveUnit::class);
-    }
-
-    public function interventions(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
-    {
-        return $this->belongsToMany(\App\Models\Intervention::class, 'intervention_systems')
-            ->withTimestamps();
+        return $this->hasMany(SystemComponent::class);
     }
 
     public function getDisplayNameAttribute(): string
     {
-        $name = $this->name
-            ?? $this->label
-            ?? $this->code
-            ?? 'Sistema';
-
-        return "{$name} (#{$this->id})";
+        $base = $this->name ?: ('System #' . $this->id);
+        return "{$this->manufacturer} - {$base} (#{$this->id})";
     }
 }

@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class ComponentModel extends Model
+{
+    protected $table = 'component_models';
+
+    protected $fillable = [
+        'manufacturer',
+        'type',        // mechanical_unit | controller | drive_unit
+        'model_name',
+        'notes',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'bool',
+    ];
+
+    public function templateVersions(): HasMany
+    {
+        return $this->hasMany(ComponentModelTemplateVersion::class);
+    }
+
+    public function activeTemplateVersion()
+    {
+        return $this->templateVersions()
+            ->where('status', 'active')
+            ->orderByDesc('version')
+            ->first();
+    }
+}

@@ -10,21 +10,22 @@ return new class extends Migration {
         Schema::create('system_components', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('system_id')->constrained('systems')->cascadeOnDelete();
-            $table->foreignId('component_model_id')->constrained('component_models')->restrictOnDelete();
+            $table->foreignId('system_id')
+                ->constrained('systems')
+                ->cascadeOnDelete();
 
-            $table->string('label')->nullable(); // editable: “Robot 1”, “MU1”, etc
-            $table->string('serial')->nullable();
+            $table->foreignId('component_model_id')
+                ->constrained('component_models')
+                ->restrictOnDelete();
 
-            // Para ABB multimove: “main_controller”, “drive_unit”, etc.
-            $table->string('role')->nullable();
-
-            $table->unsignedInteger('position')->default(1); // orden dentro del sistema
-            $table->json('meta')->nullable(); // libre (ejes, payload, etc)
-
+            $table->enum('role', ['controller', 'mechanical_unit', 'drive_unit']);
+            $table->string('label')->nullable(); // editable: "Robot 1"
+            $table->string('serial_number')->nullable();
+            $table->unsignedInteger('position')->default(1);
+            $table->json('meta')->nullable(); // info técnica opcional
             $table->timestamps();
 
-            $table->index(['system_id', 'position']);
+            $table->index(['system_id', 'role'], 'syscomp_sys_role_idx');
         });
     }
 
