@@ -39,8 +39,7 @@ class SystemsRelationManager extends RelationManager
                             return $query->whereRaw('1=0');
                         }
 
-                        return $query->where('client_id', $clientId)
-                            ->orderBy('name');
+                        return $query->where('client_id', $clientId);
                     }),
             ])
             ->actions([
