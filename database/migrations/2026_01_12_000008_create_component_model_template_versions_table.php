@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        Schema::dropIfExists('component_model_template_versions');
+
         Schema::create('component_model_template_versions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('component_model_id')->constrained('component_models')->cascadeOnDelete();
@@ -18,7 +20,7 @@ return new class extends Migration {
             $table->json('schema'); // aquí irá el builder (campos/sections)
             $table->timestamps();
 
-            $table->unique(['component_model_id', 'version']);
+            $table->unique(['component_model_id', 'version'], 'cmtv_model_ver_uq');
         });
     }
 
