@@ -20,6 +20,15 @@ class System extends Model
         return $this->hasMany(SystemMechanicalUnit::class);
     }
 
+    public function plant() { return $this->belongsTo(Plant::class); }
+    
+    public function machine() { return $this->belongsTo(Machine::class); }
+
+    public function components()
+    {
+        return $this->hasMany(SystemComponent::class)->orderBy('position');
+    }
+
     public function driveUnits(): HasMany
     {
         return $this->hasMany(SystemDriveUnit::class);
