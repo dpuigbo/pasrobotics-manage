@@ -28,9 +28,9 @@ class SystemResource extends Resource
                     ->required()
                     ->maxLength(150),
 
-                Forms\Components\TextInput::make('manufacturer')
-                    ->label('Fabricante (opcional)')
-                    ->maxLength(50),
+                Forms\Components\Select::make('manufacturer')
+                    ->options(config('manufacturers.list'))
+                    ->required(),
 
                 // si luego enlazamos Clients, esto se convierte a Select->relationship(...)
                 Forms\Components\TextInput::make('client_id')

@@ -30,16 +30,10 @@ class SystemsRelationManager extends RelationManager
                     ->label('Añadir sistema existente')
                     ->preloadRecordSelect()
                     ->recordTitleAttribute('display_name')
-                    ->disabled(fn () => blank($this->getOwnerRecord()->client_id))
-                    ->recordSelectOptionsQuery(function (Builder $query) {
+                    ->recordSelectOptionsQuery(function ($query) {
                         $clientId = $this->getOwnerRecord()->client_id;
 
-                        // Si aún no hay cliente seleccionado, no mostramos nada
-                        if (blank($clientId)) {
-                            return $query->whereRaw('1=0');
-                        }
-
-                        return $query->where('client_id', $clientId);
+                        return $query->when($clientId, fn ($q) => $q->where('client_id', $clientId));
                     }),
             ])
             ->actions([

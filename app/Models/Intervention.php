@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Intervention extends Model
 {
     protected $fillable = [
-        'client_name','type','status','reference','title','start_at','end_at','notes'
+        'client_id','type','status','reference','title','start_at','end_at','notes'
     ];
 
     protected $casts = [

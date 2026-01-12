@@ -24,9 +24,10 @@ return new class extends Migration {
         Schema::create('interventions', function (Blueprint $table) {
             $table->id();
 
-            $table->string('client_name')->nullable(); // de momento
-            $table->string('type'); // preventive | corrective
-            $table->string('status')->default('draft'); // draft | in_progress | closed
+            $table->foreignId('client_id')->nullable()->constrained('clients')->nullOnDelete();
+
+            $table->string('type')->default('preventive'); // o lo que uses
+            $table->string('status')->default('draft');
 
             $table->string('reference')->nullable();
             $table->string('title')->nullable();
@@ -35,9 +36,9 @@ return new class extends Migration {
             $table->dateTime('end_at')->nullable();
 
             $table->text('notes')->nullable();
-
             $table->timestamps();
-            $table->index(['client_name', 'type', 'status']);
+            
+            $table->index(['client_id', 'type', 'status']);
         });
 
         // Sistemas incluidos en la intervención (lista de trabajo)
