@@ -13,7 +13,8 @@ return new class extends Migration {
             $table->foreignId('system_id')->constrained('systems')->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['intervention_id', 'system_id'], 'intervention_system_uq');
+            $table->unique(['intervention_id', 'system_id']);
+            $table->index(['system_id']);
         });
     }
 

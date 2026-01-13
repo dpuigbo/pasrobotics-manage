@@ -11,23 +11,23 @@ return new class extends Migration {
             $table->id();
 
             $table->foreignId('system_id')->constrained('systems')->cascadeOnDelete();
-            $table->foreignId('component_model_id')->constrained('component_models')->restrictOnDelete();
+            $table->foreignId('component_model_id')->constrained('component_models');
 
-            // controller | mechanical_unit | drive_unit
-            $table->string('role');
+            // Redundancia útil para filtrar sin join (opcional)
+            $table->string('type', 40);
 
-            // Etiqueta editable: "ROB_1", "ROB_2", "Cabinet", "DU_1"...
-            $table->string('label')->nullable();
-
+            $table->string('label')->nullable();         // "Cabinet", "ROB_1", "DU_1"...
             $table->string('serial_number')->nullable();
             $table->date('manufactured_at')->nullable();
-            $table->unsignedSmallInteger('axes_count')->nullable();
-            $table->unsignedSmallInteger('sort_order')->default(0);
+            $table->unsignedTinyInteger('axes_count')->nullable(); // solo si aplica
 
+            $table->json('meta')->nullable();            // campos extra sin migrar cada vez
             $table->text('notes')->nullable();
+
             $table->timestamps();
 
-            $table->index(['system_id', 'role']);
+            $table->index(['system_id', 'type']);
+            $table->index(['component_model_id']);
         });
     }
 

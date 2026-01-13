@@ -10,11 +10,16 @@ class SystemComponent extends Model
     protected $fillable = [
         'system_id',
         'component_model_id',
-        'role',          // mechanical_unit | controller | drive_unit
-        'label',         // editable (lo que pediste)
+        'type',
+        'label',
         'serial_number',
-        'position',
+        'axes_count',
         'notes',
+        'meta',
+    ];
+
+    protected $casts = [
+        'meta' => 'array',
     ];
 
     public function system(): BelongsTo

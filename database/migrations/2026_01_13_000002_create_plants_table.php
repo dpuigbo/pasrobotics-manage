@@ -12,9 +12,10 @@ return new class extends Migration {
             $table->foreignId('client_id')->constrained('clients')->cascadeOnDelete();
             $table->string('name');
             $table->string('address')->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->index(['client_id', 'name']);
+            $table->unique(['client_id', 'name']);
         });
     }
 

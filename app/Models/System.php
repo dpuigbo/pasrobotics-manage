@@ -12,7 +12,7 @@ class System extends Model
         'client_id',
         'plant_id',
         'machine_id',
-        'manufacturer',
+        'manufacturer_id',
         'name',
         'notes',
     ];
@@ -32,6 +32,11 @@ class System extends Model
         return $this->belongsTo(Machine::class);
     }
 
+    public function manufacturer(): BelongsTo
+    {
+        return $this->belongsTo(Manufacturer::class);
+    }
+
     public function components(): HasMany
     {
         return $this->hasMany(SystemComponent::class);
@@ -39,7 +44,8 @@ class System extends Model
 
     public function getDisplayNameAttribute(): string
     {
+        $m = $this->manufacturer?->name ?? 'N/A';
         $base = $this->name ?: ('System #' . $this->id);
-        return "{$this->manufacturer} - {$base} (#{$this->id})";
+        return "{$m} - {$base} (#{$this->id})";
     }
 }

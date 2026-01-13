@@ -9,21 +9,17 @@ return new class extends Migration {
     {
         Schema::create('component_models', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('manufacturer_id')->constrained('manufacturers');
 
-            // ABB / KUKA / FANUC... (lista controlada en UI)
-            $table->string('manufacturer');
+            // controller | mechanical_unit | drive_unit (puedes ampliar)
+            $table->string('type', 40);
 
-            // robot | controller | drive_unit
-            $table->string('type');
-
-            // IRB2600, IRC5 Single Cabinet, KRC4, etc.
             $table->string('name');
-
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->index(['manufacturer', 'type']);
-            $table->unique(['manufacturer', 'type', 'name'], 'cm_man_type_name_uq');
+            $table->index(['manufacturer_id', 'type']);
+            $table->unique(['manufacturer_id', 'type', 'name']);
         });
     }
 

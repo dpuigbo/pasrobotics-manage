@@ -10,11 +10,10 @@ class ComponentModel extends Model
     protected $table = 'component_models';
 
     protected $fillable = [
-        'manufacturer',
-        'type',        // mechanical_unit | controller | drive_unit
-        'model_name',
+        'manufacturer_id',
+        'type',
+        'name',
         'notes',
-        'is_active',
     ];
 
     protected $casts = [

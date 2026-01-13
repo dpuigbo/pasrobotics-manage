@@ -14,13 +14,15 @@ return new class extends Migration {
             $table->foreignId('plant_id')->nullable()->constrained('plants')->nullOnDelete();
             $table->foreignId('machine_id')->nullable()->constrained('machines')->nullOnDelete();
 
-            $table->string('manufacturer'); // se rellena al crear (ABB/KUKA)
-            $table->string('name');         // L4000TMP R7, WJ12, etc.
+            $table->foreignId('manufacturer_id')->constrained('manufacturers');
+
+            $table->string('name');
             $table->text('notes')->nullable();
 
             $table->timestamps();
 
-            $table->index(['client_id', 'manufacturer']);
+            $table->index(['client_id', 'plant_id', 'machine_id']);
+            $table->unique(['client_id', 'manufacturer_id', 'name']);
         });
     }
 

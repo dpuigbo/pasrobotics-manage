@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -17,9 +18,14 @@ class Intervention extends Model
         'end_at' => 'datetime',
     ];
 
-    public function systems(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function client(): BelongsTo
     {
-        return $this->belongsToMany(\App\Models\System::class, 'intervention_systems')
+        return $this->belongsTo(Client::class);
+    }
+
+    public function systems(): BelongsToMany
+    {
+        return $this->belongsToMany(System::class, 'intervention_systems')
             ->withTimestamps();
     }
 
@@ -27,10 +33,4 @@ class Intervention extends Model
     {
         return $this->hasMany(Report::class);
     }
-
-    public function client()
-    {
-        return $this->belongsTo(\App\Models\Client::class);
-    }
-
 }

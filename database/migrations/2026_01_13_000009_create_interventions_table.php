@@ -12,22 +12,20 @@ return new class extends Migration {
 
             $table->foreignId('client_id')->constrained('clients')->cascadeOnDelete();
 
-            // preventive | corrective
-            $table->string('type');
+            $table->string('type', 40);     // preventive/corrective
+            $table->string('status', 40)->default('draft');
 
-            // draft | in_progress | closed
-            $table->string('status')->default('draft');
+            $table->string('reference', 50)->nullable();
+            $table->string('title', 150)->nullable();
 
-            $table->string('reference')->nullable();
-            $table->string('title')->nullable();
-
-            $table->dateTime('start_at');
-            $table->dateTime('end_at');
+            $table->dateTime('start_at')->nullable();
+            $table->dateTime('end_at')->nullable();
 
             $table->text('notes')->nullable();
+
             $table->timestamps();
 
-            $table->index(['client_id', 'type', 'status']);
+            $table->index(['client_id', 'status', 'type']);
         });
     }
 

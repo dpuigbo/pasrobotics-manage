@@ -9,12 +9,15 @@ return new class extends Migration {
     {
         Schema::create('machines', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('plant_id')->constrained('plants')->cascadeOnDelete();
+            $table->foreignId('client_id')->constrained('clients')->cascadeOnDelete();
+            $table->foreignId('plant_id')->nullable()->constrained('plants')->nullOnDelete();
             $table->string('name');
+            $table->string('line')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->index(['plant_id', 'name']);
+            $table->index(['client_id', 'plant_id']);
+            $table->unique(['client_id', 'plant_id', 'name']);
         });
     }
 

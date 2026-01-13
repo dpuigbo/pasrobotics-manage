@@ -38,8 +38,11 @@ class SystemResource extends Resource
                 ->preload()
                 ->nullable(),
 
-            Forms\Components\Select::make('manufacturer')
-                ->options(config('manufacturers.list'))
+            Forms\Components\Select::make('manufacturer_id')
+                ->label('Fabricante')
+                ->relationship('manufacturer', 'name')
+                ->searchable()
+                ->preload()
                 ->required()
                 ->reactive(),
 
@@ -58,7 +61,7 @@ class SystemResource extends Resource
             ->recordTitleAttribute('display_name')
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
-                Tables\Columns\TextColumn::make('manufacturer')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('manufacturer.name')->label('Fabricante')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('name')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('client.name')->label('Cliente')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('plant.name')->label('Planta')->toggleable(),
@@ -66,7 +69,7 @@ class SystemResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('client_id')->relationship('client', 'name')->searchable()->preload(),
-                Tables\Filters\SelectFilter::make('manufacturer')->options(config('manufacturers.list')),
+                Tables\Filters\SelectFilter::make('manufacturer_id')->relationship('manufacturer', 'name')->searchable()->preload(),
                 Tables\Filters\SelectFilter::make('plant_id')->relationship('plant', 'name')->searchable()->preload(),
                 Tables\Filters\SelectFilter::make('machine_id')->relationship('machine', 'name')->searchable()->preload(),
             ])
