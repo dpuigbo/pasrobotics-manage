@@ -13,7 +13,7 @@ class ListSystems extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Nuevo sistema'),
+            Actions\CreateAction::make(),
         ];
     }
 }

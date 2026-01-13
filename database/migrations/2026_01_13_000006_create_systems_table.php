@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->foreignId('plant_id')->nullable()->constrained('plants')->nullOnDelete();
             $table->foreignId('machine_id')->nullable()->constrained('machines')->nullOnDelete();
 
-            $table->string('manufacturer')->nullable();
-            $table->string('name')->nullable();
+            $table->string('manufacturer'); // se rellena al crear (ABB/KUKA)
+            $table->string('name');         // L4000TMP R7, WJ12, etc.
             $table->text('notes')->nullable();
 
             $table->timestamps();

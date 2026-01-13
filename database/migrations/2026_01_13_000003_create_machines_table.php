@@ -11,7 +11,6 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('plant_id')->constrained('plants')->cascadeOnDelete();
             $table->string('name');
-            $table->string('code')->nullable(); // opcional: “CELL-01”
             $table->text('notes')->nullable();
             $table->timestamps();
 

@@ -9,15 +9,21 @@ return new class extends Migration {
     {
         Schema::create('component_models', function (Blueprint $table) {
             $table->id();
-            $table->string('manufacturer'); // ABB, KUKA, FANUC...
-            $table->enum('type', ['mechanical_unit', 'controller', 'drive_unit']);
-            $table->string('model_name'); // IRB2600, IRC5 Single, etc.
-            $table->string('variant')->nullable(); // opcional: “Single Cabinet”, etc.
+
+            // ABB / KUKA / FANUC... (lista controlada en UI)
+            $table->string('manufacturer');
+
+            // robot | controller | drive_unit
+            $table->string('type');
+
+            // IRB2600, IRC5 Single Cabinet, KRC4, etc.
+            $table->string('name');
+
             $table->text('notes')->nullable();
-            $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->index(['manufacturer', 'type', 'model_name'], 'cm_mfr_type_model_idx');
+            $table->index(['manufacturer', 'type']);
+            $table->unique(['manufacturer', 'type', 'name'], 'cm_man_type_name_uq');
         });
     }
 

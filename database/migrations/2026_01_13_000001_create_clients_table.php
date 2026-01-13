@@ -10,9 +10,9 @@ return new class extends Migration {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-
-            // De tu CSV actual
             $table->string('site')->nullable();
+
+            // tarifas / extras (lo que ya tenías)
             $table->decimal('travel_hours', 8, 2)->nullable();
             $table->decimal('travel_days', 8, 2)->nullable();
             $table->integer('km')->nullable();

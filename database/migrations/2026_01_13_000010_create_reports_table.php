@@ -7,20 +7,26 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('intervention_systems', function (Blueprint $table) {
+        Schema::create('reports', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('intervention_id')->constrained('interventions')->cascadeOnDelete();
             $table->foreignId('system_id')->constrained('systems')->cascadeOnDelete();
 
+            $table->string('status')->default('draft'); // draft | signed | etc
+
+            $table->dateTime('performed_start_at')->nullable();
+            $table->dateTime('performed_end_at')->nullable();
+
+            $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->unique(['intervention_id', 'system_id'], 'interv_sys_unique');
+            $table->unique(['intervention_id', 'system_id'], 'report_intervention_system_uq');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('intervention_systems');
+        Schema::dropIfExists('reports');
     }
 };
