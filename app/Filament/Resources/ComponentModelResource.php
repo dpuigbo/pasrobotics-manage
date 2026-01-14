@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ComponentModelResource\Pages;
-use App\Filament\Resources\ComponentModelResource\RelationManagers\TemplateVersionsRelationManager;
 use App\Models\ComponentModel;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -15,19 +14,25 @@ class ComponentModelResource extends Resource
 {
     protected static ?string $model = ComponentModel::class;
 
+    //protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
     protected static ?string $navigationGroup = 'Catálogo';
-    protected static ?string $modelLabel = 'Modelo de componente';
-    protected static ?string $pluralModelLabel = 'Modelos de componentes';
+    protected static ?string $navigationLabel = 'Modelos de Componentes';
+    protected static ?int $navigationSort = 10;
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Select::make('manufacturer_id')
+            Forms\Components\Select::make('manufacturer')
                 ->label('Fabricante')
-                ->relationship('manufacturer', 'name', fn ($q) => $q->where('is_active', true)->orderBy('sort'))
+                ->options(config('manufacturers.list', [
+                    'ABB' => 'ABB',
+                    'KUKA' => 'KUKA',
+                    'FANUC' => 'FANUC',
+                    'YASKAWA' => 'Yaskawa',
+                ]))
                 ->searchable()
-                ->preload()
                 ->required(),
 
             Forms\Components\Select::make('type')
@@ -39,8 +44,8 @@ class ComponentModelResource extends Resource
                 ])
                 ->required(),
 
-            Forms\Components\TextInput::make('name')
-                ->label('Nombre del modelo')
+            Forms\Components\TextInput::make('model_name')
+                ->label('Modelo')
                 ->required()
                 ->maxLength(255),
 
@@ -53,27 +58,28 @@ class ComponentModelResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // MUY IMPORTANTE: que el title sea un string simple
+            ->recordTitleAttribute('model_name')
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
-                Tables\Columns\TextColumn::make('manufacturer.name')->label('Fabricante')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('manufacturer')->label('Fabricante')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('type')->label('Tipo')->sortable(),
-                Tables\Columns\TextColumn::make('name')->label('Modelo')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('updated_at')->label('Actualizado')->dateTime()->sortable()->toggleable(),
+                Tables\Columns\TextColumn::make('model_name')->label('Modelo')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('updated_at')->label('Actualizado')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('manufacturer_id')
-                    ->label('Fabricante')
-                    ->relationship('manufacturer', 'name', fn ($q) => $q->orderBy('sort'))
-                    ->searchable()
-                    ->preload(),
-
-                Tables\Filters\SelectFilter::make('type')
-                    ->label('Tipo')
-                    ->options([
-                        'controller' => 'Controladora',
-                        'mechanical_unit' => 'Unidad mecánica',
-                        'drive_unit' => 'Drive unit',
-                    ]),
+                Tables\Filters\SelectFilter::make('manufacturer')
+                    ->options(config('manufacturers.list', [
+                        'ABB' => 'ABB',
+                        'KUKA' => 'KUKA',
+                        'FANUC' => 'FANUC',
+                        'YASKAWA' => 'Yaskawa',
+                    ])),
+                Tables\Filters\SelectFilter::make('type')->options([
+                    'controller' => 'Controladora',
+                    'mechanical_unit' => 'Unidad mecánica',
+                    'drive_unit' => 'Drive unit',
+                ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -82,13 +88,6 @@ class ComponentModelResource extends Resource
                 Tables\Actions\DeleteBulkAction::make(),
             ])
             ->defaultSort('id', 'desc');
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            TemplateVersionsRelationManager::class,
-        ];
     }
 
     public static function getPages(): array

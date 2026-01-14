@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 
 class TemplateAssignmentResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $model = TemplateAssignment::class;
     protected static ?string $navigationGroup = 'Constructor';
     protected static ?string $navigationIcon = 'heroicon-o-link';

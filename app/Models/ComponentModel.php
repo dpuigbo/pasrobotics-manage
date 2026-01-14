@@ -7,29 +7,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ComponentModel extends Model
 {
-    protected $table = 'component_models';
-
     protected $fillable = [
-        'manufacturer_id',
+        'manufacturer',
         'type',
-        'name',
+        'model_name',
         'notes',
     ];
-
-    protected $casts = [
-        'is_active' => 'bool',
-    ];
-
-    public function templateVersions()
-    {
-        return $this->hasMany(\App\Models\ComponentModelTemplateVersion::class);
-    }
-
-    public function activeTemplateVersion()
-    {
-        return $this->templateVersions()
-            ->where('status', 'active')
-            ->orderByDesc('version')
-            ->first();
-    }
 }
