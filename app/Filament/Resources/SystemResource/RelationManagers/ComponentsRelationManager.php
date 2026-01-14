@@ -17,17 +17,15 @@ class ComponentsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('label')
             ->columns([
                 Tables\Columns\TextColumn::make('type')->label('Tipo')->sortable(),
                 Tables\Columns\TextColumn::make('label')->label('Etiqueta')->searchable(),
-                Tables\Columns\TextColumn::make('componentModel.name')->label('Modelo')->searchable(),
-                Tables\Columns\TextColumn::make('serial_number')->label('Serial')->toggleable()->searchable(),
-                Tables\Columns\TextColumn::make('axes_count')->label('Ejes')->toggleable()->sortable(),
+                Tables\Columns\TextColumn::make('componentModel.model_name')->label('Modelo')->searchable(),
+                Tables\Columns\TextColumn::make('serial_number')->label('Serial')->toggleable(),
+                Tables\Columns\TextColumn::make('axes_count')->label('Ejes')->toggleable(),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Añadir componente')
                     ->form([
                         Forms\Components\Select::make('type')
                             ->label('Tipo')
@@ -43,99 +41,43 @@ class ComponentsRelationManager extends RelationManager
                             ->label('Modelo (catálogo)')
                             ->searchable()
                             ->preload()
-                            ->required()
                             ->options(function (Get $get) {
                                 $system = $this->getOwnerRecord();
-
                                 $q = ComponentModel::query();
 
-                                // Filtrar por fabricante del sistema
-                                if ($system?->manufacturer_id) {
+                                // si System ya tiene manufacturer_id úsalo (recomendado)
+                                if (isset($system->manufacturer_id) && $system->manufacturer_id) {
                                     $q->where('manufacturer_id', $system->manufacturer_id);
                                 }
 
-                                // Filtrar por tipo elegido en el formulario
                                 if ($get('type')) {
                                     $q->where('type', $get('type'));
                                 }
 
-                                return $q->orderBy('name')->pluck('name', 'id');
-                            }),
+                                return $q
+                                    ->orderBy('model_name')
+                                    ->pluck('model_name', 'id');
+                            })
+                            ->required(),
 
                         Forms\Components\TextInput::make('label')
                             ->label('Etiqueta (editable)')
-                            ->helperText('Ej: ROB_1, ROB_2, Cabinet, DU_1...')
+                            ->helperText('Ej: IRB2600 #1, IRC5 Cabinet, Drive Unit #2...')
                             ->maxLength(255),
 
-                        Forms\Components\TextInput::make('serial_number')
-                            ->label('Serial number')
-                            ->maxLength(255),
+                        Forms\Components\TextInput::make('serial_number')->maxLength(255),
 
                         Forms\Components\TextInput::make('axes_count')
-                            ->label('Número de ejes (si aplica)')
                             ->numeric()
-                            ->minValue(1)
-                            ->maxValue(12),
+                            ->minValue(0)
+                            ->label('Nº ejes (si aplica)'),
 
-                        Forms\Components\Textarea::make('notes')
-                            ->label('Notas')
-                            ->columnSpanFull(),
+                        Forms\Components\Textarea::make('notes')->columnSpanFull(),
                     ]),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->form([
-                        Forms\Components\Select::make('type')
-                            ->label('Tipo')
-                            ->options([
-                                'controller' => 'Controladora',
-                                'mechanical_unit' => 'Unidad mecánica',
-                                'drive_unit' => 'Drive unit',
-                            ])
-                            ->required()
-                            ->reactive(),
-
-                        Forms\Components\Select::make('component_model_id')
-                            ->label('Modelo (catálogo)')
-                            ->searchable()
-                            ->preload()
-                            ->required()
-                            ->options(function (Get $get) {
-                                $system = $this->getOwnerRecord();
-
-                                $q = ComponentModel::query();
-
-                                if ($system?->manufacturer_id) {
-                                    $q->where('manufacturer_id', $system->manufacturer_id);
-                                }
-
-                                if ($get('type')) {
-                                    $q->where('type', $get('type'));
-                                }
-
-                                return $q->orderBy('name')->pluck('name', 'id');
-                            }),
-
-                        Forms\Components\TextInput::make('label')
-                            ->label('Etiqueta (editable)')
-                            ->maxLength(255),
-
-                        Forms\Components\TextInput::make('serial_number')
-                            ->label('Serial number')
-                            ->maxLength(255),
-
-                        Forms\Components\TextInput::make('axes_count')
-                            ->label('Número de ejes (si aplica)')
-                            ->numeric()
-                            ->minValue(1)
-                            ->maxValue(12),
-
-                        Forms\Components\Textarea::make('notes')
-                            ->label('Notas')
-                            ->columnSpanFull(),
-                    ]),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ]);
     }
 }
-
