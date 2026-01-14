@@ -20,9 +20,9 @@ class ComponentModel extends Model
         'is_active' => 'bool',
     ];
 
-    public function templateVersions(): HasMany
+    public function templateVersions()
     {
-        return $this->hasMany(ComponentModelTemplateVersion::class);
+        return $this->hasMany(\App\Models\ComponentModelTemplateVersion::class);
     }
 
     public function activeTemplateVersion()
