@@ -17,4 +17,9 @@ class DriveUnitModelResource extends ComponentModelBaseResource
             'index' => Pages\ManageDriveUnitModels::route('/'),
         ];
     }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('type', 'drive_unit');
+    }
 }

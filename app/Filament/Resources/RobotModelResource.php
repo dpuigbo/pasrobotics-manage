@@ -17,4 +17,9 @@ class RobotModelResource extends ComponentModelBaseResource
             'index' => Pages\ManageRobotModels::route('/'),
         ];
     }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('type', 'robot');
+    }
 }

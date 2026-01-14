@@ -17,4 +17,9 @@ class ControllerModelResource extends ComponentModelBaseResource
             'index' => Pages\ManageControllerModels::route('/'),
         ];
     }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('type', 'controller');
+    }
 }
