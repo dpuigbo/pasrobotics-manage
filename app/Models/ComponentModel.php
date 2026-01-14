@@ -10,8 +10,8 @@ class ComponentModel extends Model
 {
     protected $fillable = [
         'manufacturer_id',
-        'type',        // controller | drive_unit | mechanical_unit
-        'model_name',
+        'type',   // controller | mechanical_unit | drive_unit
+        'name',
         'notes',
     ];
 
@@ -23,5 +23,11 @@ class ComponentModel extends Model
     public function templateVersions(): HasMany
     {
         return $this->hasMany(ComponentModelTemplateVersion::class);
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        $m = $this->manufacturer?->name ?? 'N/A';
+        return "{$m} · {$this->type} · {$this->name}";
     }
 }

@@ -1,17 +1,20 @@
 <?php
 
-namespace App\Filament\Resources\RobotModelResource\Pages;
+namespace App\Filament\Resources;
 
-use App\Filament\Resources\RobotModelResource;
-use Filament\Actions;
-use Filament\Resources\Pages\ManageRecords;
+use App\Filament\Resources\RobotModelResource\Pages;
 
-class ManageRobotModels extends ManageRecords
+class RobotModelResource extends ComponentModelBaseResource
 {
-    protected static string $resource = RobotModelResource::class;
+    protected static string $type = 'mechanical_unit';
+    protected static ?string $navigationLabel = 'Modelos De Robot';
+    protected static ?string $modelLabel = 'Modelo de Robot';
+    protected static ?string $pluralModelLabel = 'Modelos de Robot';
 
-    protected function getHeaderActions(): array
+    public static function getPages(): array
     {
-        return [Actions\CreateAction::make()];
+        return [
+            'index' => Pages\ManageRobotModels::route('/'),
+        ];
     }
 }

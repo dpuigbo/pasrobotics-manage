@@ -18,17 +18,16 @@ class ComponentsRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('type')->label('Tipo')->sortable(),
+                Tables\Columns\TextColumn::make('role')->label('Tipo')->sortable(),
                 Tables\Columns\TextColumn::make('label')->label('Etiqueta')->searchable(),
-                Tables\Columns\TextColumn::make('componentModel.model_name')->label('Modelo')->searchable(),
+                Tables\Columns\TextColumn::make('componentModel.name')->label('Modelo')->searchable(),
                 Tables\Columns\TextColumn::make('serial_number')->label('Serial')->toggleable(),
-                Tables\Columns\TextColumn::make('axes_count')->label('Ejes')->toggleable(),
+                Tables\Columns\TextColumn::make('position')->label('Posición')->toggleable(),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->form([
-                        Forms\Components\Select::make('type')
-                            ->label('Tipo')
+                        Forms\Components\Select::make('role')
                             ->options([
                                 'controller' => 'Controladora',
                                 'mechanical_unit' => 'Unidad mecánica',
@@ -39,39 +38,33 @@ class ComponentsRelationManager extends RelationManager
 
                         Forms\Components\Select::make('component_model_id')
                             ->label('Modelo (catálogo)')
-                            ->searchable()
-                            ->preload()
                             ->options(function (Get $get) {
-                                $system = $this->getOwnerRecord();
+                                $owner = $this->getOwnerRecord();
+                                $manufacturerId = $owner?->manufacturer_id;
+
                                 $q = ComponentModel::query();
 
-                                // si System ya tiene manufacturer_id úsalo (recomendado)
-                                if (isset($system->manufacturer_id) && $system->manufacturer_id) {
-                                    $q->where('manufacturer_id', $system->manufacturer_id);
+                                if ($manufacturerId) {
+                                    $q->where('manufacturer_id', $manufacturerId);
                                 }
 
-                                if ($get('type')) {
-                                    $q->where('type', $get('type'));
+                                if ($get('role')) {
+                                    $q->where('type', $get('role'));
                                 }
 
-                                return $q
-                                    ->orderBy('model_name')
-                                    ->pluck('model_name', 'id');
+                                return $q->orderBy('name')->pluck('name', 'id');
                             })
+                            ->searchable()
+                            ->preload()
                             ->required(),
 
                         Forms\Components\TextInput::make('label')
                             ->label('Etiqueta (editable)')
-                            ->helperText('Ej: IRB2600 #1, IRC5 Cabinet, Drive Unit #2...')
+                            ->helperText('Ej: IRB2600 #1, IRC5 Drive Unit #2, etc.')
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('serial_number')->maxLength(255),
-
-                        Forms\Components\TextInput::make('axes_count')
-                            ->numeric()
-                            ->minValue(0)
-                            ->label('Nº ejes (si aplica)'),
-
+                        Forms\Components\TextInput::make('position')->numeric(),
                         Forms\Components\Textarea::make('notes')->columnSpanFull(),
                     ]),
             ])
