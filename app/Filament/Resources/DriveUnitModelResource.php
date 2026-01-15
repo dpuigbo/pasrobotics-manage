@@ -8,8 +8,9 @@ class DriveUnitModelResource extends ComponentModelBaseResource
 {
     protected static ?string $navigationIcon = 'heroicon-o-bolt';
     protected static ?string $navigationGroup = 'Catálogos';
+    protected static ?string $navigationLabel = 'Modelos de Drive Unit';
     protected static ?string $modelLabel = 'Drive Unit';
-    protected static ?string $pluralModelLabel = 'Modelos de Drive Unit';
+    protected static ?string $pluralModelLabel = 'Drive Units';
 
     public static function componentType(): string
     {

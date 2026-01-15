@@ -8,8 +8,9 @@ class ControllerModelResource extends ComponentModelBaseResource
 {
     protected static ?string $navigationIcon = 'heroicon-o-cpu-chip';
     protected static ?string $navigationGroup = 'Catálogos';
+    protected static ?string $navigationLabel = 'Modelos de Controladora';
     protected static ?string $modelLabel = 'Controladora';
-    protected static ?string $pluralModelLabel = 'Modelos de Controladora';
+    protected static ?string $pluralModelLabel = 'Controladoras';
 
     public static function componentType(): string
     {
