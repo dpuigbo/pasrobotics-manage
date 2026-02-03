@@ -95,20 +95,32 @@ class ReportComposer
     }
 
     /**
-     * TEMPORAL: aquí enchufamos tu lógica real de plantillas en el siguiente commit.
-     * Ahora mismo devuelve la última TemplateVersion de esa familia (según cómo lo tengas).
+     * Resolves the active template version for a given component model.
+     * Returns the latest active version, or latest version if no active one exists.
      */
     private function resolveTemplateVersionOrFail(string $componentType, int $modelId): array
     {
-        // ✅ Sustituye esto por tu forma actual de obtener TemplateVersion
-        // Por ahora: fallback genérico (si no lo tienes, te saltará error y lo ajustamos al instante)
-        $tv = \App\Models\TemplateVersion::query()->latest('id')->first();
+        $tv = \App\Models\ComponentModelTemplateVersion::query()
+            ->where('component_model_id', $modelId)
+            ->where('status', 'active')
+            ->orderByDesc('version')
+            ->first();
 
-        if (!$tv) throw new RuntimeException("No hay TemplateVersion en BD para {$componentType} (crear plantilla primero).");
+        // Fallback: if no active version, get the latest version regardless of status
+        if (!$tv) {
+            $tv = \App\Models\ComponentModelTemplateVersion::query()
+                ->where('component_model_id', $modelId)
+                ->orderByDesc('version')
+                ->first();
+        }
+
+        if (!$tv) {
+            throw new RuntimeException("No hay plantilla definida para {$componentType} con model_id={$modelId}. Por favor, crea una plantilla primero.");
+        }
 
         return [
             'id' => $tv->id,
-            'schema' => $tv->schema_json ?? [],
+            'schema' => $tv->schema ?? [],
         ];
     }
 

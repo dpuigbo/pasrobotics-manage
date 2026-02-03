@@ -11,7 +11,9 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('component_model_id')->constrained('component_models')->cascadeOnDelete();
             $table->unsignedInteger('version');  // 1,2,3...
+            $table->string('status')->default('draft'); // draft | active | deprecated
             $table->longText('schema')->nullable(); // JSON / texto
+            $table->text('notes')->nullable();
             $table->timestamps();
 
             $table->unique(['component_model_id', 'version'], 'cm_tv_cm_ver_uq');

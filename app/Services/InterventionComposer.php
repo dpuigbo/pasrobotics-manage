@@ -9,6 +9,23 @@ use App\Models\TemplateVersion;
 use Illuminate\Support\Arr;
 use RuntimeException;
 
+/**
+ * DEPRECATED - NOT IN USE
+ *
+ * This service is incomplete and references non-existent models:
+ * - InterventionComponent (should be ReportComponent)
+ * - TemplateVersion (should be ComponentModelTemplateVersion)
+ * - TemplateAssignment (doesn't exist)
+ *
+ * The correct workflow uses ReportComposer instead:
+ * 1. Create Intervention
+ * 2. Attach Systems to Intervention
+ * 3. Create Report per System (one Report = one System in one Intervention)
+ * 4. Use ReportComposer to compose Report components
+ *
+ * @see ReportComposer
+ * @deprecated Use ReportComposer instead
+ */
 class InterventionComposer
 {
     public function compose(Intervention $intervention): void

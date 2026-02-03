@@ -19,5 +19,5 @@ class ReportComponent extends Model
     ];
 
     public function report(): BelongsTo { return $this->belongsTo(Report::class); }
-    public function templateVersion(): BelongsTo { return $this->belongsTo(TemplateVersion::class); }
+    public function templateVersion(): BelongsTo { return $this->belongsTo(ComponentModelTemplateVersion::class, 'template_version_id'); }
 }

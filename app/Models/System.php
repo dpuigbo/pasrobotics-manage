@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class System extends Model
 {
@@ -40,6 +41,21 @@ class System extends Model
     public function components(): HasMany
     {
         return $this->hasMany(SystemComponent::class);
+    }
+
+    public function controllerUnit(): HasOne
+    {
+        return $this->hasOne(SystemComponent::class)->where('type', 'controller');
+    }
+
+    public function mechanicalUnits(): HasMany
+    {
+        return $this->hasMany(SystemComponent::class)->where('type', 'mechanical_unit');
+    }
+
+    public function driveUnits(): HasMany
+    {
+        return $this->hasMany(SystemComponent::class)->where('type', 'drive_unit');
     }
 
     public function getDisplayNameAttribute(): string
