@@ -52,37 +52,137 @@ class TemplateVersionsRelationManager extends RelationManager
                 ->columnSpanFull()
                 ->helperText('Notas internas sobre esta versión de la plantilla'),
 
-            Forms\Components\Section::make('Esquema de la plantilla')
-                ->description('Define los campos del formulario de mantenimiento (formato JSON)')
+            Forms\Components\Section::make('Constructor de plantilla')
+                ->description('Arrastra para reordenar. Añade secciones y campos según necesites.')
                 ->schema([
-                    Forms\Components\Textarea::make('schema')
-                        ->label('Esquema JSON')
-                        ->rows(15)
-                        ->required()
-                        ->default(function () {
-                            return json_encode([
-                                'sections' => [
-                                    [
-                                        'title' => 'Inspección General',
-                                        'description' => 'Verificaciones básicas del componente',
-                                        'fields' => [
-                                            [
-                                                'key' => 'estado_general',
-                                                'label' => 'Estado general',
-                                                'type' => 'tristate',
-                                                'required' => true,
-                                                'with_observation' => true,
-                                            ],
-                                        ],
-                                    ],
-                                ],
-                            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-                        })
-                        ->helperText('
-                            Tipos de campo disponibles: text, number, date, textarea, select, tristate, table.
-                            Ver documentación para estructura completa.
-                        '),
-                ]),
+                    Forms\Components\Repeater::make('schema.sections')
+                        ->label('Secciones')
+                        ->schema([
+                            Forms\Components\TextInput::make('title')
+                                ->label('Título de la sección')
+                                ->required()
+                                ->placeholder('ej: Inspección General'),
+
+                            Forms\Components\Textarea::make('description')
+                                ->label('Descripción')
+                                ->rows(2)
+                                ->placeholder('Descripción breve de esta sección'),
+
+                            Forms\Components\Repeater::make('fields')
+                                ->label('Campos')
+                                ->schema([
+                                    Forms\Components\Grid::make(2)->schema([
+                                        Forms\Components\TextInput::make('key')
+                                            ->label('ID del campo')
+                                            ->required()
+                                            ->helperText('Identificador único (sin espacios, usar _ o -)')
+                                            ->placeholder('ej: estado_general')
+                                            ->regex('/^[a-z0-9_-]+$/'),
+
+                                        Forms\Components\TextInput::make('label')
+                                            ->label('Etiqueta')
+                                            ->required()
+                                            ->placeholder('ej: Estado general'),
+                                    ]),
+
+                                    Forms\Components\Grid::make(3)->schema([
+                                        Forms\Components\Select::make('type')
+                                            ->label('Tipo de campo')
+                                            ->options([
+                                                'text' => 'Texto',
+                                                'number' => 'Número',
+                                                'date' => 'Fecha',
+                                                'textarea' => 'Área de texto',
+                                                'select' => 'Selección',
+                                                'tristate' => 'Tres estados (OK/Mal/N/A)',
+                                                'table' => 'Tabla',
+                                            ])
+                                            ->required()
+                                            ->reactive()
+                                            ->default('text'),
+
+                                        Forms\Components\Toggle::make('required')
+                                            ->label('Campo obligatorio')
+                                            ->default(false),
+
+                                        Forms\Components\Toggle::make('with_observation')
+                                            ->label('Con observaciones')
+                                            ->helperText('Añade campo de texto adicional')
+                                            ->default(false),
+                                    ]),
+
+                                    // Opciones para campos tipo 'select'
+                                    Forms\Components\Repeater::make('options')
+                                        ->label('Opciones')
+                                        ->schema([
+                                            Forms\Components\TextInput::make('value')
+                                                ->label('Valor')
+                                                ->required(),
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Etiqueta')
+                                                ->required(),
+                                        ])
+                                        ->columns(2)
+                                        ->visible(fn ($get) => $get('type') === 'select')
+                                        ->helperText('Define las opciones disponibles para el campo'),
+
+                                    // Configuración para campos tipo 'table'
+                                    Forms\Components\Repeater::make('columns')
+                                        ->label('Columnas de la tabla')
+                                        ->schema([
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Título')
+                                                ->required(),
+                                            Forms\Components\Select::make('type')
+                                                ->label('Tipo')
+                                                ->options([
+                                                    'text' => 'Texto',
+                                                    'number' => 'Número',
+                                                    'select' => 'Selección',
+                                                ])
+                                                ->default('text'),
+                                        ])
+                                        ->columns(3)
+                                        ->visible(fn ($get) => $get('type') === 'table')
+                                        ->helperText('Define las columnas de la tabla'),
+
+                                    Forms\Components\TextInput::make('placeholder')
+                                        ->label('Texto de ayuda')
+                                        ->placeholder('ej: Introduce el valor en mm'),
+
+                                    Forms\Components\Textarea::make('help_text')
+                                        ->label('Texto de ayuda adicional')
+                                        ->rows(2)
+                                        ->placeholder('Instrucciones detalladas para el técnico'),
+                                ])
+                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
+                                ->collapsible()
+                                ->reorderable()
+                                ->addActionLabel('Añadir campo')
+                                ->defaultItems(0),
+                        ])
+                        ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+                        ->collapsible()
+                        ->reorderable()
+                        ->addActionLabel('Añadir sección')
+                        ->defaultItems(1)
+                        ->default([[
+                            'title' => 'Inspección General',
+                            'description' => 'Verificaciones básicas del componente',
+                            'fields' => [[
+                                'key' => 'estado_general',
+                                'label' => 'Estado general',
+                                'type' => 'tristate',
+                                'required' => true,
+                                'with_observation' => true,
+                            ]],
+                        ]]),
+                ])
+                ->columnSpanFull(),
         ]);
     }
 
