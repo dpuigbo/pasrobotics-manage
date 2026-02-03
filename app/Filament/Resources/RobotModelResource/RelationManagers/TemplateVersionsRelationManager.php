@@ -71,93 +71,149 @@ class TemplateVersionsRelationManager extends RelationManager
                             Forms\Components\Repeater::make('fields')
                                 ->label('Campos')
                                 ->schema([
-                                    Forms\Components\Grid::make(2)->schema([
-                                        Forms\Components\TextInput::make('key')
-                                            ->label('ID del campo')
-                                            ->required()
-                                            ->helperText('Identificador único (sin espacios, usar _ o -)')
-                                            ->placeholder('ej: estado_general')
-                                            ->regex('/^[a-z0-9_-]+$/'),
-
-                                        Forms\Components\TextInput::make('label')
-                                            ->label('Etiqueta')
-                                            ->required()
-                                            ->placeholder('ej: Estado general'),
-                                    ]),
-
-                                    Forms\Components\Grid::make(3)->schema([
-                                        Forms\Components\Select::make('type')
-                                            ->label('Tipo de campo')
-                                            ->options([
-                                                'text' => 'Texto',
-                                                'number' => 'Número',
-                                                'date' => 'Fecha',
-                                                'textarea' => 'Área de texto',
-                                                'select' => 'Selección',
-                                                'tristate' => 'Tres estados (OK/Mal/N/A)',
-                                                'table' => 'Tabla',
-                                            ])
-                                            ->required()
-                                            ->reactive()
-                                            ->default('text'),
-
-                                        Forms\Components\Toggle::make('required')
-                                            ->label('Campo obligatorio')
-                                            ->default(false),
-
-                                        Forms\Components\Toggle::make('with_observation')
-                                            ->label('Con observaciones')
-                                            ->helperText('Añade campo de texto adicional')
-                                            ->default(false),
-                                    ]),
-
-                                    // Opciones para campos tipo 'select'
-                                    Forms\Components\Repeater::make('options')
-                                        ->label('Opciones')
+                                    Forms\Components\Section::make('Configuración del campo')
                                         ->schema([
-                                            Forms\Components\TextInput::make('value')
-                                                ->label('Valor')
-                                                ->required(),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Etiqueta')
-                                                ->required(),
-                                        ])
-                                        ->columns(2)
-                                        ->visible(fn ($get) => $get('type') === 'select')
-                                        ->helperText('Define las opciones disponibles para el campo'),
+                                            Forms\Components\Grid::make(2)->schema([
+                                                Forms\Components\TextInput::make('label')
+                                                    ->label('📝 Etiqueta del campo')
+                                                    ->required()
+                                                    ->placeholder('ej: Estado general')
+                                                    ->columnSpan(1),
 
-                                    // Configuración para campos tipo 'table'
-                                    Forms\Components\Repeater::make('columns')
-                                        ->label('Columnas de la tabla')
-                                        ->schema([
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Título')
-                                                ->required(),
+                                                Forms\Components\TextInput::make('key')
+                                                    ->label('🔑 ID del campo')
+                                                    ->required()
+                                                    ->helperText('Sin espacios, usar _ o -')
+                                                    ->placeholder('ej: estado_general')
+                                                    ->regex('/^[a-z0-9_-]+$/')
+                                                    ->columnSpan(1),
+                                            ]),
+
                                             Forms\Components\Select::make('type')
-                                                ->label('Tipo')
+                                                ->label('📋 Tipo de campo')
                                                 ->options([
-                                                    'text' => 'Texto',
-                                                    'number' => 'Número',
-                                                    'select' => 'Selección',
+                                                    'text' => '📝 Texto corto',
+                                                    'number' => '🔢 Número',
+                                                    'date' => '📅 Fecha',
+                                                    'textarea' => '📄 Texto largo',
+                                                    'select' => '📑 Lista desplegable',
+                                                    'tristate' => '✓✗ Tres estados (OK/Mal/N/A)',
+                                                    'table' => '📊 Tabla de datos',
                                                 ])
-                                                ->default('text'),
+                                                ->required()
+                                                ->reactive()
+                                                ->default('text')
+                                                ->afterStateUpdated(function ($state, callable $set, $get) {
+                                                    // Auto-add columns when switching to table
+                                                    if ($state === 'table' && empty($get('columns'))) {
+                                                        $set('columns', [
+                                                            ['key' => 'item', 'label' => 'Item', 'type' => 'text'],
+                                                            ['key' => 'valor', 'label' => 'Valor', 'type' => 'text'],
+                                                        ]);
+                                                    }
+                                                    // Auto-add options when switching to select
+                                                    if ($state === 'select' && empty($get('options'))) {
+                                                        $set('options', [
+                                                            ['value' => 'opcion1', 'label' => 'Opción 1'],
+                                                            ['value' => 'opcion2', 'label' => 'Opción 2'],
+                                                        ]);
+                                                    }
+                                                })
+                                                ->columnSpanFull(),
+
+                                            Forms\Components\Grid::make(2)->schema([
+                                                Forms\Components\Toggle::make('required')
+                                                    ->label('Campo obligatorio')
+                                                    ->default(false)
+                                                    ->inline(false),
+
+                                                Forms\Components\Toggle::make('with_observation')
+                                                    ->label('Con campo de observaciones')
+                                                    ->helperText('Añade un área de texto adicional')
+                                                    ->default(false)
+                                                    ->inline(false),
+                                            ]),
                                         ])
-                                        ->columns(3)
+                                        ->collapsible()
+                                        ->collapsed(false),
+
+                                    // Configuración específica para SELECT
+                                    Forms\Components\Section::make('Opciones de selección')
+                                        ->schema([
+                                            Forms\Components\Repeater::make('options')
+                                                ->label('Opciones disponibles')
+                                                ->schema([
+                                                    Forms\Components\TextInput::make('value')
+                                                        ->label('Valor interno')
+                                                        ->required()
+                                                        ->placeholder('ej: ok'),
+                                                    Forms\Components\TextInput::make('label')
+                                                        ->label('Texto a mostrar')
+                                                        ->required()
+                                                        ->placeholder('ej: Correcto'),
+                                                ])
+                                                ->columns(2)
+                                                ->defaultItems(2)
+                                                ->addActionLabel('Añadir opción')
+                                                ->reorderable()
+                                                ->collapsible(),
+                                        ])
+                                        ->visible(fn ($get) => $get('type') === 'select')
+                                        ->collapsed(false),
+
+                                    // Configuración específica para TABLA
+                                    Forms\Components\Section::make('Configuración de tabla')
+                                        ->description('Define las columnas de tu tabla. Los técnicos podrán añadir múltiples filas.')
+                                        ->schema([
+                                            Forms\Components\Repeater::make('columns')
+                                                ->label('Columnas de la tabla')
+                                                ->schema([
+                                                    Forms\Components\TextInput::make('label')
+                                                        ->label('📌 Título de columna')
+                                                        ->required()
+                                                        ->placeholder('ej: Componente'),
+
+                                                    Forms\Components\TextInput::make('key')
+                                                        ->label('🔑 ID de columna')
+                                                        ->required()
+                                                        ->regex('/^[a-z0-9_-]+$/')
+                                                        ->placeholder('ej: componente'),
+
+                                                    Forms\Components\Select::make('type')
+                                                        ->label('📋 Tipo')
+                                                        ->options([
+                                                            'text' => 'Texto',
+                                                            'number' => 'Número',
+                                                            'select' => 'Selección',
+                                                        ])
+                                                        ->default('text'),
+                                                ])
+                                                ->columns(3)
+                                                ->defaultItems(2)
+                                                ->addActionLabel('Añadir columna')
+                                                ->reorderable()
+                                                ->collapsible()
+                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Nueva columna'),
+                                        ])
                                         ->visible(fn ($get) => $get('type') === 'table')
-                                        ->helperText('Define las columnas de la tabla'),
+                                        ->collapsed(false),
 
-                                    Forms\Components\TextInput::make('placeholder')
-                                        ->label('Texto de ayuda')
-                                        ->placeholder('ej: Introduce el valor en mm'),
+                                    // Ayudas adicionales
+                                    Forms\Components\Section::make('Ayuda para el técnico')
+                                        ->schema([
+                                            Forms\Components\TextInput::make('placeholder')
+                                                ->label('Texto de ejemplo')
+                                                ->placeholder('ej: Introduce el valor en mm')
+                                                ->helperText('Aparecerá como guía dentro del campo'),
 
-                                    Forms\Components\Textarea::make('help_text')
-                                        ->label('Texto de ayuda adicional')
-                                        ->rows(2)
-                                        ->placeholder('Instrucciones detalladas para el técnico'),
+                                            Forms\Components\Textarea::make('help_text')
+                                                ->label('Instrucciones detalladas')
+                                                ->rows(2)
+                                                ->placeholder('Explica cómo debe completar este campo')
+                                                ->helperText('Aparecerá debajo del campo como ayuda'),
+                                        ])
+                                        ->collapsible()
+                                        ->collapsed(true),
                                 ])
                                 ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
                                 ->collapsible()
