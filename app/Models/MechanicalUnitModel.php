@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MechanicalUnitModel extends ComponentModel
 {
@@ -17,5 +18,11 @@ class MechanicalUnitModel extends ComponentModel
         static::creating(function (MechanicalUnitModel $model) {
             $model->type = 'mechanical_unit';
         });
+    }
+
+    // Override to ensure proper table reference in RelationManager
+    public function templateVersions(): HasMany
+    {
+        return $this->hasMany(ComponentModelTemplateVersion::class, 'component_model_id', 'id');
     }
 }
