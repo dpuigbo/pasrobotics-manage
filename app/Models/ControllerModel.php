@@ -11,5 +11,9 @@ class ControllerModel extends ComponentModel
         static::addGlobalScope('type', function (Builder $builder) {
             $builder->where('type', 'controller');
         });
+
+        static::creating(function (ControllerModel $model) {
+            $model->type = 'controller';
+        });
     }
 }

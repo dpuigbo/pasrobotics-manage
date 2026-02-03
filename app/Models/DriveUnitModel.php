@@ -11,5 +11,9 @@ class DriveUnitModel extends ComponentModel
         static::addGlobalScope('type', function (Builder $builder) {
             $builder->where('type', 'drive_unit');
         });
+
+        static::creating(function (DriveUnitModel $model) {
+            $model->type = 'drive_unit';
+        });
     }
 }

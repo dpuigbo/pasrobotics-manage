@@ -11,5 +11,9 @@ class MechanicalUnitModel extends ComponentModel
         static::addGlobalScope('type', function (Builder $builder) {
             $builder->where('type', 'mechanical_unit');
         });
+
+        static::creating(function (MechanicalUnitModel $model) {
+            $model->type = 'mechanical_unit';
+        });
     }
 }
