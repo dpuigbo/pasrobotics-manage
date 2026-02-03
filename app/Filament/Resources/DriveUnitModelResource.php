@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DriveUnitModelResource\Pages;
+use App\Filament\Resources\DriveUnitModelResource\RelationManagers;
 use App\Models\DriveUnitModel;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -56,6 +57,13 @@ class DriveUnitModelResource extends Resource
                 Tables\Actions\DeleteBulkAction::make(),
             ])
             ->defaultSort('id', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\TemplateVersionsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

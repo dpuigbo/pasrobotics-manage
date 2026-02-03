@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ControllerModelResource\Pages;
+use App\Filament\Resources\ControllerModelResource\RelationManagers;
 use App\Models\ControllerModel;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -56,6 +57,13 @@ class ControllerModelResource extends Resource
                 Tables\Actions\DeleteBulkAction::make(),
             ])
             ->defaultSort('id', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\TemplateVersionsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
