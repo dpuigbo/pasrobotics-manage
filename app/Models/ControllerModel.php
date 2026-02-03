@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ControllerModel extends ComponentModel
 {
+    protected $table = 'component_models';
+
     protected static function booted(): void
     {
         static::addGlobalScope('type', function (Builder $builder) {
