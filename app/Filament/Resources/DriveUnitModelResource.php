@@ -62,7 +62,8 @@ class DriveUnitModelResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\TemplateVersionsRelationManager::class,
+            // Temporarily disabled for debugging
+            // RelationManagers\TemplateVersionsRelationManager::class,
         ];
     }
 
