@@ -1,0 +1,38 @@
+# SERVER DEPLOYMENT FIX COMMANDS
+# Run these commands on your production server to fix the 500 error
+
+# 1. Make sure you're in the project directory
+cd /path/to/your/project
+
+# 2. Pull latest code (or upload files if not using git)
+git pull origin main
+# OR manually upload these files via FTP/SFTP:
+# - app/Models/ControllerModel.php
+# - app/Models/MechanicalUnitModel.php
+# - app/Models/DriveUnitModel.php
+# - app/Filament/Resources/ControllerModelResource.php
+# - app/Filament/Resources/RobotModelResource.php
+# - app/Filament/Resources/DriveUnitModelResource.php
+# - app/Filament/Resources/ControllerModelResource/RelationManagers/TemplateVersionsRelationManager.php
+
+# 3. Clear ALL Laravel caches (CRITICAL!)
+php artisan optimize:clear
+php artisan config:clear
+php artisan cache:clear
+php artisan view:clear
+php artisan route:clear
+
+# 4. Rebuild optimized files
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# 5. If using OPcache, restart PHP-FPM to clear opcache
+# (command varies by server setup - examples below)
+sudo systemctl restart php8.2-fpm
+# OR
+sudo service php-fpm restart
+
+# 6. Test the pages
+# Visit: https://manage.pasrobotics.com/admin/controller-models
+
