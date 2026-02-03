@@ -48,19 +48,19 @@ class SystemComponent extends Model
         return $this->type === 'drive_unit' ? $this->component_model_id : null;
     }
 
-    // Type-specific relationships to component models
+    // Alias relationships pointing to the same componentModel (for backward compatibility with eager loading)
     public function controllerModel(): BelongsTo
     {
-        return $this->belongsTo(ComponentModel::class, 'component_model_id')->where('type', 'controller');
+        return $this->componentModel();
     }
 
     public function robotModel(): BelongsTo
     {
-        return $this->belongsTo(ComponentModel::class, 'component_model_id')->where('type', 'mechanical_unit');
+        return $this->componentModel();
     }
 
     public function driveUnitModel(): BelongsTo
     {
-        return $this->belongsTo(ComponentModel::class, 'component_model_id')->where('type', 'drive_unit');
+        return $this->componentModel();
     }
 }

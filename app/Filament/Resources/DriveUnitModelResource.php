@@ -28,15 +28,10 @@ class DriveUnitModelResource extends Resource
                 ->preload()
                 ->required(),
 
-            Forms\Components\TextInput::make('model_name')
+            Forms\Components\TextInput::make('name')
                 ->label('Modelo')
                 ->required()
                 ->maxLength(255),
-
-            Forms\Components\TextInput::make('variant')
-                ->label('Variante')
-                ->maxLength(255)
-                ->nullable(),
 
             Forms\Components\Textarea::make('notes')
                 ->columnSpanFull()
@@ -50,8 +45,7 @@ class DriveUnitModelResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->sortable(),
                 Tables\Columns\TextColumn::make('manufacturer.name')->label('Fabricante')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('model_name')->label('Modelo')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('variant')->label('Variante')->toggleable(),
+                Tables\Columns\TextColumn::make('name')->label('Modelo')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(),
             ])
             ->actions([
