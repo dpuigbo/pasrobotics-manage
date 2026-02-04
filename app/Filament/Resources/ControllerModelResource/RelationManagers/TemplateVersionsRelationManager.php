@@ -52,190 +52,236 @@ class TemplateVersionsRelationManager extends RelationManager
                 ->columnSpanFull()
                 ->helperText('Notas internas sobre esta versión de la plantilla'),
 
-            Forms\Components\Section::make('Constructor de plantilla')
-                ->description('Arrastra para reordenar. Añade secciones y campos según necesites.')
+            Forms\Components\Section::make('Constructor Visual de Plantilla')
+                ->description('🎨 Construye tu formulario añadiendo bloques. Arrastra para reordenar.')
                 ->schema([
                     Forms\Components\Repeater::make('schema.sections')
-                        ->label('Secciones')
+                        ->label('Secciones del formulario')
                         ->schema([
                             Forms\Components\TextInput::make('title')
-                                ->label('Título de la sección')
+                                ->label('📋 Título de la sección')
                                 ->required()
                                 ->placeholder('ej: Inspección General'),
 
                             Forms\Components\Textarea::make('description')
-                                ->label('Descripción')
+                                ->label('Descripción (opcional)')
                                 ->rows(2)
-                                ->placeholder('Descripción breve de esta sección'),
+                                ->placeholder('Breve descripción de esta sección'),
 
-                            Forms\Components\Repeater::make('fields')
-                                ->label('Campos')
-                                ->schema([
-                                    Forms\Components\Section::make('Configuración del campo')
+                            Forms\Components\Builder::make('fields')
+                                ->label('Bloques de campos')
+                                ->blocks([
+                                    // BLOQUE: Texto corto
+                                    Forms\Components\Builder\Block::make('text')
+                                        ->label('📝 Texto corto')
+                                        ->icon('heroicon-o-pencil')
                                         ->schema([
-                                            Forms\Components\Grid::make(2)->schema([
-                                                Forms\Components\TextInput::make('label')
-                                                    ->label('📝 Etiqueta del campo')
-                                                    ->required()
-                                                    ->placeholder('ej: Estado general')
-                                                    ->columnSpan(1),
-
-                                                Forms\Components\TextInput::make('key')
-                                                    ->label('🔑 ID del campo')
-                                                    ->required()
-                                                    ->helperText('Sin espacios, usar _ o -')
-                                                    ->placeholder('ej: estado_general')
-                                                    ->regex('/^[a-z0-9_-]+$/')
-                                                    ->columnSpan(1),
-                                            ]),
-
-                                            Forms\Components\Select::make('type')
-                                                ->label('📋 Tipo de campo')
-                                                ->options([
-                                                    'text' => '📝 Texto corto',
-                                                    'number' => '🔢 Número',
-                                                    'date' => '📅 Fecha',
-                                                    'textarea' => '📄 Texto largo',
-                                                    'select' => '📑 Lista desplegable',
-                                                    'tristate' => '✓✗ Tres estados (OK/Mal/N/A)',
-                                                    'table' => '📊 Tabla de datos',
-                                                ])
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Etiqueta')
                                                 ->required()
-                                                ->reactive()
-                                                ->default('text')
-                                                ->afterStateUpdated(function ($state, callable $set, $get) {
-                                                    // Auto-add columns when switching to table
-                                                    if ($state === 'table' && empty($get('columns'))) {
-                                                        $set('columns', [
-                                                            ['key' => 'item', 'label' => 'Item', 'type' => 'text'],
-                                                            ['key' => 'valor', 'label' => 'Valor', 'type' => 'text'],
-                                                        ]);
-                                                    }
-                                                    // Auto-add options when switching to select
-                                                    if ($state === 'select' && empty($get('options'))) {
-                                                        $set('options', [
-                                                            ['value' => 'opcion1', 'label' => 'Opción 1'],
-                                                            ['value' => 'opcion2', 'label' => 'Opción 2'],
-                                                        ]);
-                                                    }
-                                                })
-                                                ->columnSpanFull(),
-
+                                                ->placeholder('¿Qué pregunta hacemos?'),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->placeholder('ej: temperatura_aceite')
+                                                ->regex('/^[a-z0-9_-]+$/'),
                                             Forms\Components\Grid::make(2)->schema([
                                                 Forms\Components\Toggle::make('required')
-                                                    ->label('Campo obligatorio')
-                                                    ->default(false)
-                                                    ->inline(false),
-
+                                                    ->label('Obligatorio')
+                                                    ->default(false),
                                                 Forms\Components\Toggle::make('with_observation')
-                                                    ->label('Con campo de observaciones')
-                                                    ->helperText('Añade un área de texto adicional')
-                                                    ->default(false)
-                                                    ->inline(false),
+                                                    ->label('Con observaciones')
+                                                    ->default(false),
                                             ]),
+                                            Forms\Components\TextInput::make('placeholder')
+                                                ->label('Texto de ayuda')
+                                                ->placeholder('Aparece dentro del campo'),
                                         ])
-                                        ->collapsible()
-                                        ->collapsed(false),
+                                        ->columns(1),
 
-                                    // Configuración específica para SELECT
-                                    Forms\Components\Section::make('Opciones de selección')
+                                    // BLOQUE: Número
+                                    Forms\Components\Builder\Block::make('number')
+                                        ->label('🔢 Número')
+                                        ->icon('heroicon-o-hashtag')
                                         ->schema([
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Etiqueta')
+                                                ->required()
+                                                ->placeholder('¿Qué medimos?'),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Grid::make(2)->schema([
+                                                Forms\Components\Toggle::make('required')
+                                                    ->label('Obligatorio'),
+                                                Forms\Components\Toggle::make('with_observation')
+                                                    ->label('Con observaciones'),
+                                            ]),
+                                            Forms\Components\TextInput::make('placeholder')
+                                                ->label('Unidad de medida')
+                                                ->placeholder('ej: mm, kg, ºC'),
+                                        ]),
+
+                                    // BLOQUE: Fecha
+                                    Forms\Components\Builder\Block::make('date')
+                                        ->label('📅 Fecha')
+                                        ->icon('heroicon-o-calendar')
+                                        ->schema([
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Etiqueta')
+                                                ->required(),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Toggle::make('required')
+                                                ->label('Obligatorio'),
+                                        ]),
+
+                                    // BLOQUE: Texto largo
+                                    Forms\Components\Builder\Block::make('textarea')
+                                        ->label('📄 Texto largo')
+                                        ->icon('heroicon-o-document-text')
+                                        ->schema([
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Etiqueta')
+                                                ->required(),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Toggle::make('required')
+                                                ->label('Obligatorio'),
+                                            Forms\Components\TextInput::make('placeholder')
+                                                ->label('Texto de ayuda'),
+                                        ]),
+
+                                    // BLOQUE: Lista desplegable
+                                    Forms\Components\Builder\Block::make('select')
+                                        ->label('📑 Lista desplegable')
+                                        ->icon('heroicon-o-queue-list')
+                                        ->schema([
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Etiqueta')
+                                                ->required(),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Toggle::make('required')
+                                                ->label('Obligatorio'),
                                             Forms\Components\Repeater::make('options')
                                                 ->label('Opciones disponibles')
                                                 ->schema([
                                                     Forms\Components\TextInput::make('value')
-                                                        ->label('Valor interno')
-                                                        ->required()
-                                                        ->placeholder('ej: ok'),
+                                                        ->label('Valor')
+                                                        ->required(),
                                                     Forms\Components\TextInput::make('label')
-                                                        ->label('Texto a mostrar')
-                                                        ->required()
-                                                        ->placeholder('ej: Correcto'),
+                                                        ->label('Texto')
+                                                        ->required(),
                                                 ])
                                                 ->columns(2)
                                                 ->defaultItems(2)
-                                                ->addActionLabel('Añadir opción')
-                                                ->reorderable()
-                                                ->collapsible(),
-                                        ])
-                                        ->visible(fn ($get) => $get('type') === 'select')
-                                        ->collapsed(false),
+                                                ->collapsible()
+                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción'),
+                                        ]),
 
-                                    // Configuración específica para TABLA
-                                    Forms\Components\Section::make('Configuración de tabla')
-                                        ->description('Define las columnas de tu tabla. Los técnicos podrán añadir múltiples filas.')
+                                    // BLOQUE: Tres estados (OK/Mal/N/A)
+                                    Forms\Components\Builder\Block::make('tristate')
+                                        ->label('✓✗ Tres estados')
+                                        ->icon('heroicon-o-check-circle')
                                         ->schema([
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('¿Qué verificamos?')
+                                                ->required()
+                                                ->placeholder('ej: Estado del cableado'),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Grid::make(2)->schema([
+                                                Forms\Components\Toggle::make('required')
+                                                    ->label('Obligatorio')
+                                                    ->default(true),
+                                                Forms\Components\Toggle::make('with_observation')
+                                                    ->label('Con campo de observaciones')
+                                                    ->default(true)
+                                                    ->helperText('Añade un área de texto'),
+                                            ]),
+                                            Forms\Components\Placeholder::make('preview')
+                                                ->label('')
+                                                ->content('✓ OK  |  ✗ Mal  |  - N/A + Observaciones'),
+                                        ]),
+
+                                    // BLOQUE: Tabla
+                                    Forms\Components\Builder\Block::make('table')
+                                        ->label('📊 Tabla de datos')
+                                        ->icon('heroicon-o-table-cells')
+                                        ->schema([
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Título de la tabla')
+                                                ->required()
+                                                ->placeholder('ej: Lista de componentes revisados'),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
                                             Forms\Components\Repeater::make('columns')
                                                 ->label('Columnas de la tabla')
                                                 ->schema([
                                                     Forms\Components\TextInput::make('label')
-                                                        ->label('📌 Título de columna')
+                                                        ->label('📌 Encabezado')
                                                         ->required()
                                                         ->placeholder('ej: Componente'),
-
                                                     Forms\Components\TextInput::make('key')
-                                                        ->label('🔑 ID de columna')
+                                                        ->label('🔑 ID')
                                                         ->required()
                                                         ->regex('/^[a-z0-9_-]+$/')
                                                         ->placeholder('ej: componente'),
-
                                                     Forms\Components\Select::make('type')
-                                                        ->label('📋 Tipo')
+                                                        ->label('Tipo')
                                                         ->options([
                                                             'text' => 'Texto',
                                                             'number' => 'Número',
-                                                            'select' => 'Selección',
                                                         ])
                                                         ->default('text'),
                                                 ])
                                                 ->columns(3)
                                                 ->defaultItems(2)
-                                                ->addActionLabel('Añadir columna')
-                                                ->reorderable()
                                                 ->collapsible()
-                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Nueva columna'),
-                                        ])
-                                        ->visible(fn ($get) => $get('type') === 'table')
-                                        ->collapsed(false),
-
-                                    // Ayudas adicionales
-                                    Forms\Components\Section::make('Ayuda para el técnico')
-                                        ->schema([
-                                            Forms\Components\TextInput::make('placeholder')
-                                                ->label('Texto de ejemplo')
-                                                ->placeholder('ej: Introduce el valor en mm')
-                                                ->helperText('Aparecerá como guía dentro del campo'),
-
-                                            Forms\Components\Textarea::make('help_text')
-                                                ->label('Instrucciones detalladas')
-                                                ->rows(2)
-                                                ->placeholder('Explica cómo debe completar este campo')
-                                                ->helperText('Aparecerá debajo del campo como ayuda'),
-                                        ])
-                                        ->collapsible()
-                                        ->collapsed(true),
+                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Columna')
+                                                ->helperText('El técnico podrá añadir múltiples filas'),
+                                        ]),
                                 ])
-                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
+                                ->blockNumbers(false)
+                                ->addActionLabel('➕ Añadir bloque')
                                 ->collapsible()
+                                ->cloneable()
                                 ->reorderable()
-                                ->addActionLabel('Añadir campo')
-                                ->defaultItems(0),
+                                ->columnSpanFull(),
                         ])
-                        ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+                        ->itemLabel(fn (array $state): ?string => $state['title'] ?? 'Nueva sección')
+                        ->collapsed()
                         ->collapsible()
                         ->reorderable()
-                        ->addActionLabel('Añadir sección')
+                        ->cloneable()
+                        ->addActionLabel('➕ Añadir sección')
                         ->defaultItems(1)
                         ->default([[
                             'title' => 'Inspección General',
                             'description' => 'Verificaciones básicas del componente',
-                            'fields' => [[
-                                'key' => 'estado_general',
-                                'label' => 'Estado general',
-                                'type' => 'tristate',
-                                'required' => true,
-                                'with_observation' => true,
-                            ]],
+                            'fields' => [
+                                [
+                                    'type' => 'tristate',
+                                    'data' => [
+                                        'key' => 'estado_general',
+                                        'label' => 'Estado general',
+                                        'required' => true,
+                                        'with_observation' => true,
+                                    ],
+                                ],
+                            ],
                         ]]),
                 ])
                 ->columnSpanFull(),
@@ -293,9 +339,9 @@ class TemplateVersionsRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->modalWidth('5xl'),
+                    ->modalWidth('7xl'),
                 Tables\Actions\EditAction::make()
-                    ->modalWidth('5xl'),
+                    ->modalWidth('7xl'),
                 Tables\Actions\DeleteAction::make()
                     ->requiresConfirmation(),
             ])
