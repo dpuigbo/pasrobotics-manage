@@ -302,95 +302,78 @@ class TemplateVersionsRelationManager extends RelationManager
                                                 ->required()
                                                 ->regex('/^[a-z0-9_-]+$/'),
 
-                                            Forms\Components\Builder::make('columns')
-                                                ->label('Columnas de la tabla (puedes usar diferentes tipos de campo)')
-                                                ->blocks([
-                                                    // Columna tipo texto
-                                                    Forms\Components\Builder\Block::make('text')
-                                                        ->label('📝 Texto')
-                                                        ->icon('heroicon-o-pencil-square')
-                                                        ->schema([
-                                                            Forms\Components\TextInput::make('label')
-                                                                ->label('Encabezado')
-                                                                ->required(),
-                                                            Forms\Components\TextInput::make('key')
-                                                                ->label('ID')
-                                                                ->required()
-                                                                ->regex('/^[a-z0-9_-]+$/'),
-                                                            Forms\Components\TextInput::make('placeholder')
-                                                                ->label('Ayuda'),
-                                                        ]),
+                                            Forms\Components\Repeater::make('columns')
+                                                ->label('📊 Columnas de la tabla')
+                                                ->schema([
+                                                    Forms\Components\Select::make('type')
+                                                        ->label('Tipo de campo')
+                                                        ->options([
+                                                            'text' => '📝 Texto',
+                                                            'number' => '🔢 Número',
+                                                            'date' => '📅 Fecha',
+                                                            'select' => '📑 Lista desplegable',
+                                                            'tristate' => '✓✗ Tres estados (OK/Mal/N/A)',
+                                                        ])
+                                                        ->default('text')
+                                                        ->required()
+                                                        ->live()
+                                                        ->afterStateUpdated(function ($state, callable $set) {
+                                                            // Reset conditional fields when type changes
+                                                            if ($state !== 'number') $set('unit', null);
+                                                            if ($state !== 'select') $set('options', null);
+                                                        }),
 
-                                                    // Columna tipo número
-                                                    Forms\Components\Builder\Block::make('number')
-                                                        ->label('🔢 Número')
-                                                        ->icon('heroicon-o-hashtag')
-                                                        ->schema([
-                                                            Forms\Components\TextInput::make('label')
-                                                                ->label('Encabezado')
-                                                                ->required(),
-                                                            Forms\Components\TextInput::make('key')
-                                                                ->label('ID')
-                                                                ->required()
-                                                                ->regex('/^[a-z0-9_-]+$/'),
-                                                            Forms\Components\TextInput::make('unit')
-                                                                ->label('Unidad')
-                                                                ->placeholder('ej: mm, kg'),
-                                                        ]),
+                                                    Forms\Components\TextInput::make('label')
+                                                        ->label('Encabezado de columna')
+                                                        ->required()
+                                                        ->placeholder('ej: Componente, Medida, Estado...'),
 
-                                                    // Columna tipo fecha
-                                                    Forms\Components\Builder\Block::make('date')
-                                                        ->label('📅 Fecha')
-                                                        ->icon('heroicon-o-calendar')
-                                                        ->schema([
-                                                            Forms\Components\TextInput::make('label')
-                                                                ->label('Encabezado')
-                                                                ->required(),
-                                                            Forms\Components\TextInput::make('key')
-                                                                ->label('ID')
-                                                                ->required()
-                                                                ->regex('/^[a-z0-9_-]+$/'),
-                                                        ]),
+                                                    Forms\Components\TextInput::make('key')
+                                                        ->label('ID interno')
+                                                        ->required()
+                                                        ->regex('/^[a-z0-9_-]+$/')
+                                                        ->placeholder('ej: componente, medida_mm'),
 
-                                                    // Columna tipo select
-                                                    Forms\Components\Builder\Block::make('select')
-                                                        ->label('📑 Selección')
-                                                        ->icon('heroicon-o-queue-list')
-                                                        ->schema([
-                                                            Forms\Components\TextInput::make('label')
-                                                                ->label('Encabezado')
-                                                                ->required(),
-                                                            Forms\Components\TextInput::make('key')
-                                                                ->label('ID')
-                                                                ->required()
-                                                                ->regex('/^[a-z0-9_-]+$/'),
-                                                            Forms\Components\Repeater::make('options')
-                                                                ->label('Opciones')
-                                                                ->simple(
-                                                                    Forms\Components\TextInput::make('value')
-                                                                        ->required()
-                                                                )
-                                                                ->defaultItems(2),
-                                                        ]),
+                                                    // Campos condicionales según el tipo
+                                                    Forms\Components\TextInput::make('placeholder')
+                                                        ->label('Texto de ayuda')
+                                                        ->placeholder('Aparece dentro del campo')
+                                                        ->visible(fn (callable $get) => in_array($get('type'), ['text', 'number'])),
 
-                                                    // Columna tipo tristate
-                                                    Forms\Components\Builder\Block::make('tristate')
-                                                        ->label('✓✗ Tres estados')
-                                                        ->icon('heroicon-o-check-circle')
-                                                        ->schema([
-                                                            Forms\Components\TextInput::make('label')
-                                                                ->label('Encabezado')
-                                                                ->required(),
-                                                            Forms\Components\TextInput::make('key')
-                                                                ->label('ID')
+                                                    Forms\Components\TextInput::make('unit')
+                                                        ->label('Unidad de medida')
+                                                        ->placeholder('ej: mm, kg, ºC')
+                                                        ->visible(fn (callable $get) => $get('type') === 'number'),
+
+                                                    Forms\Components\Repeater::make('options')
+                                                        ->label('Opciones disponibles')
+                                                        ->simple(
+                                                            Forms\Components\TextInput::make('value')
                                                                 ->required()
-                                                                ->regex('/^[a-z0-9_-]+$/'),
-                                                        ]),
+                                                                ->placeholder('Opción')
+                                                        )
+                                                        ->defaultItems(2)
+                                                        ->visible(fn (callable $get) => $get('type') === 'select')
+                                                        ->columns(1),
                                                 ])
-                                                ->blockNumbers(false)
+                                                ->itemLabel(fn (array $state): ?string =>
+                                                    ($state['label'] ?? 'Nueva columna') .
+                                                    ' (' . match($state['type'] ?? 'text') {
+                                                        'text' => '📝',
+                                                        'number' => '🔢',
+                                                        'date' => '📅',
+                                                        'select' => '📑',
+                                                        'tristate' => '✓✗',
+                                                        default => '📝'
+                                                    } . ')'
+                                                )
                                                 ->collapsible()
+                                                ->collapsed()
+                                                ->reorderable()
+                                                ->cloneable()
                                                 ->defaultItems(2)
-                                                ->helperText('El técnico podrá añadir múltiples filas con estos campos'),
+                                                ->helperText('El técnico podrá añadir múltiples filas con estos campos en la tabla')
+                                                ->columnSpanFull(),
                                         ]),
                                 ])
                                 ->columnSpanFull(),
