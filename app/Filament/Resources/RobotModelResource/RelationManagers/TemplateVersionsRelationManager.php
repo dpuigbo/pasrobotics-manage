@@ -53,15 +53,28 @@ class TemplateVersionsRelationManager extends RelationManager
                 ->helperText('Notas internas sobre esta versión de la plantilla'),
 
             Forms\Components\Section::make('Constructor Visual de Plantilla')
-                ->description('🎨 Construye tu formulario añadiendo bloques organizados por nivel de mantenimiento.')
+                ->description('🎨 Construye tu formulario con bloques flexibles. Los campos se organizan en filas y puedes controlar su ancho.')
                 ->schema([
                     Forms\Components\Repeater::make('schema.sections')
                         ->label('Secciones del formulario')
                         ->schema([
-                            Forms\Components\TextInput::make('title')
-                                ->label('📋 Título de la sección')
-                                ->required()
-                                ->placeholder('ej: Inspección General'),
+                            Forms\Components\Grid::make(3)->schema([
+                                Forms\Components\TextInput::make('title')
+                                    ->label('📋 Título de la sección')
+                                    ->required()
+                                    ->placeholder('ej: Inspección General')
+                                    ->columnSpan(2),
+
+                                Forms\Components\Select::make('style')
+                                    ->label('🎨 Estilo')
+                                    ->options([
+                                        'default' => 'Normal',
+                                        'card' => 'Tarjeta',
+                                        'bordered' => 'Con borde',
+                                    ])
+                                    ->default('default')
+                                    ->columnSpan(1),
+                            ]),
 
                             Forms\Components\Textarea::make('description')
                                 ->label('Descripción (opcional)')
@@ -81,16 +94,30 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📝 Texto corto')
                                         ->icon('heroicon-o-pencil')
                                         ->schema([
-                                            Forms\Components\Select::make('category')
-                                                ->label('🏷️ Nivel de mantenimiento')
-                                                ->options([
-                                                    'general' => 'General (todos los niveles)',
-                                                    'level1' => 'Nivel 1',
-                                                    'level2' => 'Nivel 2',
-                                                    'level3' => 'Nivel 3',
-                                                ])
-                                                ->default('general')
-                                                ->required(),
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General (todos los niveles)',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo (100%)',
+                                                        'half' => 'Mitad (50%)',
+                                                        'third' => 'Tercio (33%)',
+                                                        'two-thirds' => 'Dos tercios (66%)',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required()
@@ -109,8 +136,12 @@ class TemplateVersionsRelationManager extends RelationManager
                                                     ->default(false),
                                             ]),
                                             Forms\Components\TextInput::make('placeholder')
-                                                ->label('Texto de ayuda')
+                                                ->label('Texto de ayuda (placeholder)')
                                                 ->placeholder('Aparece dentro del campo'),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda (descripción)')
+                                                ->placeholder('Explicación adicional que aparece debajo del campo')
+                                                ->rows(2),
                                         ]),
 
                                     // BLOQUE: Número
@@ -118,16 +149,30 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('🔢 Número')
                                         ->icon('heroicon-o-hashtag')
                                         ->schema([
-                                            Forms\Components\Select::make('category')
-                                                ->label('🏷️ Nivel de mantenimiento')
-                                                ->options([
-                                                    'general' => 'General',
-                                                    'level1' => 'Nivel 1',
-                                                    'level2' => 'Nivel 2',
-                                                    'level3' => 'Nivel 3',
-                                                ])
-                                                ->default('general')
-                                                ->required(),
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo (100%)',
+                                                        'half' => 'Mitad (50%)',
+                                                        'third' => 'Tercio (33%)',
+                                                        'two-thirds' => 'Dos tercios (66%)',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required()
@@ -145,6 +190,10 @@ class TemplateVersionsRelationManager extends RelationManager
                                             Forms\Components\TextInput::make('placeholder')
                                                 ->label('Unidad de medida')
                                                 ->placeholder('ej: mm, kg, ºC'),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda (descripción)')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
                                         ]),
 
                                     // BLOQUE: Fecha
@@ -152,16 +201,30 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📅 Fecha')
                                         ->icon('heroicon-o-calendar')
                                         ->schema([
-                                            Forms\Components\Select::make('category')
-                                                ->label('🏷️ Nivel de mantenimiento')
-                                                ->options([
-                                                    'general' => 'General',
-                                                    'level1' => 'Nivel 1',
-                                                    'level2' => 'Nivel 2',
-                                                    'level3' => 'Nivel 3',
-                                                ])
-                                                ->default('general')
-                                                ->required(),
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo',
+                                                        'half' => 'Mitad',
+                                                        'third' => 'Tercio',
+                                                        'two-thirds' => 'Dos tercios',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required(),
@@ -171,6 +234,10 @@ class TemplateVersionsRelationManager extends RelationManager
                                                 ->regex('/^[a-z0-9_-]+$/'),
                                             Forms\Components\Toggle::make('required')
                                                 ->label('Obligatorio'),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
                                         ]),
 
                                     // BLOQUE: Texto largo
@@ -178,16 +245,30 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📄 Texto largo')
                                         ->icon('heroicon-o-document-text')
                                         ->schema([
-                                            Forms\Components\Select::make('category')
-                                                ->label('🏷️ Nivel de mantenimiento')
-                                                ->options([
-                                                    'general' => 'General',
-                                                    'level1' => 'Nivel 1',
-                                                    'level2' => 'Nivel 2',
-                                                    'level3' => 'Nivel 3',
-                                                ])
-                                                ->default('general')
-                                                ->required(),
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo',
+                                                        'half' => 'Mitad',
+                                                        'third' => 'Tercio',
+                                                        'two-thirds' => 'Dos tercios',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required(),
@@ -198,7 +279,11 @@ class TemplateVersionsRelationManager extends RelationManager
                                             Forms\Components\Toggle::make('required')
                                                 ->label('Obligatorio'),
                                             Forms\Components\TextInput::make('placeholder')
-                                                ->label('Texto de ayuda'),
+                                                ->label('Texto de ayuda (placeholder)'),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda (descripción)')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
                                         ]),
 
                                     // BLOQUE: Lista desplegable
@@ -206,16 +291,30 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📑 Lista desplegable')
                                         ->icon('heroicon-o-queue-list')
                                         ->schema([
-                                            Forms\Components\Select::make('category')
-                                                ->label('🏷️ Nivel de mantenimiento')
-                                                ->options([
-                                                    'general' => 'General',
-                                                    'level1' => 'Nivel 1',
-                                                    'level2' => 'Nivel 2',
-                                                    'level3' => 'Nivel 3',
-                                                ])
-                                                ->default('general')
-                                                ->required(),
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo',
+                                                        'half' => 'Mitad',
+                                                        'third' => 'Tercio',
+                                                        'two-thirds' => 'Dos tercios',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required(),
@@ -239,6 +338,10 @@ class TemplateVersionsRelationManager extends RelationManager
                                                 ->defaultItems(2)
                                                 ->collapsible()
                                                 ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción'),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
                                         ]),
 
                                     // BLOQUE: Tres estados (OK/Mal/N/A)
@@ -246,16 +349,30 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('✓✗ Tres estados')
                                         ->icon('heroicon-o-check-circle')
                                         ->schema([
-                                            Forms\Components\Select::make('category')
-                                                ->label('🏷️ Nivel de mantenimiento')
-                                                ->options([
-                                                    'general' => 'General',
-                                                    'level1' => 'Nivel 1',
-                                                    'level2' => 'Nivel 2',
-                                                    'level3' => 'Nivel 3',
-                                                ])
-                                                ->default('general')
-                                                ->required(),
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo',
+                                                        'half' => 'Mitad',
+                                                        'third' => 'Tercio',
+                                                        'two-thirds' => 'Dos tercios',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('¿Qué verificamos?')
                                                 ->required()
@@ -273,9 +390,305 @@ class TemplateVersionsRelationManager extends RelationManager
                                                     ->default(true)
                                                     ->helperText('Añade un área de texto'),
                                             ]),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
                                             Forms\Components\Placeholder::make('preview')
                                                 ->label('')
                                                 ->content('✓ OK  |  ✗ Mal  |  - N/A + Observaciones'),
+                                        ]),
+
+                                    // BLOQUE: Imagen
+                                    Forms\Components\Builder\Block::make('image')
+                                        ->label('📷 Imagen')
+                                        ->icon('heroicon-o-photo')
+                                        ->schema([
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo',
+                                                        'half' => 'Mitad',
+                                                        'third' => 'Tercio',
+                                                        'two-thirds' => 'Dos tercios',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Etiqueta')
+                                                ->required()
+                                                ->placeholder('ej: Foto del componente'),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Grid::make(2)->schema([
+                                                Forms\Components\Toggle::make('required')
+                                                    ->label('Obligatorio'),
+                                                Forms\Components\Toggle::make('multiple')
+                                                    ->label('Múltiples imágenes')
+                                                    ->helperText('Permitir subir varias imágenes'),
+                                            ]),
+                                            Forms\Components\TextInput::make('max_size')
+                                                ->label('Tamaño máximo (MB)')
+                                                ->numeric()
+                                                ->default(5)
+                                                ->minValue(1)
+                                                ->maxValue(50),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
+                                        ]),
+
+                                    // BLOQUE: Archivo
+                                    Forms\Components\Builder\Block::make('file')
+                                        ->label('📎 Archivo adjunto')
+                                        ->icon('heroicon-o-paper-clip')
+                                        ->schema([
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo',
+                                                        'half' => 'Mitad',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Etiqueta')
+                                                ->required()
+                                                ->placeholder('ej: Documentos de calibración'),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Grid::make(2)->schema([
+                                                Forms\Components\Toggle::make('required')
+                                                    ->label('Obligatorio'),
+                                                Forms\Components\Toggle::make('multiple')
+                                                    ->label('Múltiples archivos'),
+                                            ]),
+                                            Forms\Components\TextInput::make('accepted_types')
+                                                ->label('Tipos de archivo permitidos')
+                                                ->placeholder('ej: pdf,doc,docx,xlsx')
+                                                ->helperText('Separar con comas'),
+                                            Forms\Components\TextInput::make('max_size')
+                                                ->label('Tamaño máximo (MB)')
+                                                ->numeric()
+                                                ->default(10)
+                                                ->minValue(1)
+                                                ->maxValue(100),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
+                                        ]),
+
+                                    // BLOQUE: Grupo de checkboxes
+                                    Forms\Components\Builder\Block::make('checkbox_group')
+                                        ->label('☑️ Grupo de checkboxes')
+                                        ->icon('heroicon-o-check-badge')
+                                        ->schema([
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo',
+                                                        'half' => 'Mitad',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Título del grupo')
+                                                ->required()
+                                                ->placeholder('ej: Verificaciones de seguridad'),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Repeater::make('options')
+                                                ->label('Opciones de checkbox')
+                                                ->schema([
+                                                    Forms\Components\TextInput::make('value')
+                                                        ->label('Valor')
+                                                        ->required(),
+                                                    Forms\Components\TextInput::make('label')
+                                                        ->label('Texto')
+                                                        ->required(),
+                                                ])
+                                                ->columns(2)
+                                                ->defaultItems(3)
+                                                ->collapsible()
+                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción'),
+                                            Forms\Components\Grid::make(2)->schema([
+                                                Forms\Components\TextInput::make('min_selections')
+                                                    ->label('Mínimo de selecciones')
+                                                    ->numeric()
+                                                    ->minValue(0)
+                                                    ->placeholder('0 = opcional'),
+                                                Forms\Components\TextInput::make('max_selections')
+                                                    ->label('Máximo de selecciones')
+                                                    ->numeric()
+                                                    ->minValue(1)
+                                                    ->placeholder('Dejar vacío = sin límite'),
+                                            ]),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
+                                        ]),
+
+                                    // BLOQUE: Radio buttons
+                                    Forms\Components\Builder\Block::make('radio')
+                                        ->label('🔘 Botones de opción')
+                                        ->icon('heroicon-o-radio')
+                                        ->schema([
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo',
+                                                        'half' => 'Mitad',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Pregunta')
+                                                ->required()
+                                                ->placeholder('ej: ¿Estado del equipo?'),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Toggle::make('required')
+                                                ->label('Obligatorio')
+                                                ->default(true),
+                                            Forms\Components\Repeater::make('options')
+                                                ->label('Opciones de respuesta')
+                                                ->schema([
+                                                    Forms\Components\TextInput::make('value')
+                                                        ->label('Valor')
+                                                        ->required(),
+                                                    Forms\Components\TextInput::make('label')
+                                                        ->label('Texto')
+                                                        ->required(),
+                                                ])
+                                                ->columns(2)
+                                                ->defaultItems(3)
+                                                ->collapsible()
+                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción'),
+                                            Forms\Components\Select::make('layout')
+                                                ->label('Disposición')
+                                                ->options([
+                                                    'vertical' => 'Vertical',
+                                                    'horizontal' => 'Horizontal',
+                                                ])
+                                                ->default('vertical'),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
+                                        ]),
+
+                                    // BLOQUE: Firma
+                                    Forms\Components\Builder\Block::make('signature')
+                                        ->label('✍️ Firma digital')
+                                        ->icon('heroicon-o-pencil-square')
+                                        ->schema([
+                                            Forms\Components\Grid::make(3)->schema([
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => 'General',
+                                                        'level1' => 'Nivel 1',
+                                                        'level2' => 'Nivel 2',
+                                                        'level3' => 'Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->columnSpan(2),
+                                                Forms\Components\Select::make('width')
+                                                    ->label('📐 Ancho')
+                                                    ->options([
+                                                        'full' => 'Completo',
+                                                        'half' => 'Mitad',
+                                                    ])
+                                                    ->default('full')
+                                                    ->required()
+                                                    ->columnSpan(1),
+                                            ]),
+                                            Forms\Components\TextInput::make('label')
+                                                ->label('Etiqueta')
+                                                ->required()
+                                                ->placeholder('ej: Firma del técnico'),
+                                            Forms\Components\TextInput::make('key')
+                                                ->label('ID interno')
+                                                ->required()
+                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Toggle::make('required')
+                                                ->label('Obligatorio')
+                                                ->default(true),
+                                            Forms\Components\Textarea::make('help')
+                                                ->label('Texto de ayuda')
+                                                ->placeholder('Explicación adicional')
+                                                ->rows(2),
+                                            Forms\Components\Placeholder::make('info')
+                                                ->label('')
+                                                ->content('⚡ El técnico podrá firmar con el dedo o mouse'),
                                         ]),
 
                                     // BLOQUE: Tabla con campos anidados
