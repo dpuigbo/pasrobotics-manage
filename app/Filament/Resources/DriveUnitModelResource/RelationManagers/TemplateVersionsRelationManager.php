@@ -53,7 +53,7 @@ class TemplateVersionsRelationManager extends RelationManager
                 ->helperText('Notas internas sobre esta versión de la plantilla'),
 
             Forms\Components\Section::make('Constructor Visual de Plantilla')
-                ->description('🎨 Construye tu formulario añadiendo bloques. Arrastra para reordenar.')
+                ->description('🎨 Construye tu formulario añadiendo bloques organizados por nivel de mantenimiento.')
                 ->schema([
                     Forms\Components\Repeater::make('schema.sections')
                         ->label('Secciones del formulario')
@@ -70,12 +70,27 @@ class TemplateVersionsRelationManager extends RelationManager
 
                             Forms\Components\Builder::make('fields')
                                 ->label('Bloques de campos')
+                                ->blockNumbers(false)
+                                ->addActionLabel('➕ Añadir bloque')
+                                ->collapsible()
+                                ->cloneable()
+                                ->reorderable()
                                 ->blocks([
                                     // BLOQUE: Texto corto
                                     Forms\Components\Builder\Block::make('text')
                                         ->label('📝 Texto corto')
                                         ->icon('heroicon-o-pencil')
                                         ->schema([
+                                            Forms\Components\Select::make('category')
+                                                ->label('🏷️ Nivel de mantenimiento')
+                                                ->options([
+                                                    'general' => 'General (todos los niveles)',
+                                                    'level1' => 'Nivel 1',
+                                                    'level2' => 'Nivel 2',
+                                                    'level3' => 'Nivel 3',
+                                                ])
+                                                ->default('general')
+                                                ->required(),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required()
@@ -96,14 +111,23 @@ class TemplateVersionsRelationManager extends RelationManager
                                             Forms\Components\TextInput::make('placeholder')
                                                 ->label('Texto de ayuda')
                                                 ->placeholder('Aparece dentro del campo'),
-                                        ])
-                                        ->columns(1),
+                                        ]),
 
                                     // BLOQUE: Número
                                     Forms\Components\Builder\Block::make('number')
                                         ->label('🔢 Número')
                                         ->icon('heroicon-o-hashtag')
                                         ->schema([
+                                            Forms\Components\Select::make('category')
+                                                ->label('🏷️ Nivel de mantenimiento')
+                                                ->options([
+                                                    'general' => 'General',
+                                                    'level1' => 'Nivel 1',
+                                                    'level2' => 'Nivel 2',
+                                                    'level3' => 'Nivel 3',
+                                                ])
+                                                ->default('general')
+                                                ->required(),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required()
@@ -128,6 +152,16 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📅 Fecha')
                                         ->icon('heroicon-o-calendar')
                                         ->schema([
+                                            Forms\Components\Select::make('category')
+                                                ->label('🏷️ Nivel de mantenimiento')
+                                                ->options([
+                                                    'general' => 'General',
+                                                    'level1' => 'Nivel 1',
+                                                    'level2' => 'Nivel 2',
+                                                    'level3' => 'Nivel 3',
+                                                ])
+                                                ->default('general')
+                                                ->required(),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required(),
@@ -144,6 +178,16 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📄 Texto largo')
                                         ->icon('heroicon-o-document-text')
                                         ->schema([
+                                            Forms\Components\Select::make('category')
+                                                ->label('🏷️ Nivel de mantenimiento')
+                                                ->options([
+                                                    'general' => 'General',
+                                                    'level1' => 'Nivel 1',
+                                                    'level2' => 'Nivel 2',
+                                                    'level3' => 'Nivel 3',
+                                                ])
+                                                ->default('general')
+                                                ->required(),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required(),
@@ -162,6 +206,16 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📑 Lista desplegable')
                                         ->icon('heroicon-o-queue-list')
                                         ->schema([
+                                            Forms\Components\Select::make('category')
+                                                ->label('🏷️ Nivel de mantenimiento')
+                                                ->options([
+                                                    'general' => 'General',
+                                                    'level1' => 'Nivel 1',
+                                                    'level2' => 'Nivel 2',
+                                                    'level3' => 'Nivel 3',
+                                                ])
+                                                ->default('general')
+                                                ->required(),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Etiqueta')
                                                 ->required(),
@@ -192,6 +246,16 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('✓✗ Tres estados')
                                         ->icon('heroicon-o-check-circle')
                                         ->schema([
+                                            Forms\Components\Select::make('category')
+                                                ->label('🏷️ Nivel de mantenimiento')
+                                                ->options([
+                                                    'general' => 'General',
+                                                    'level1' => 'Nivel 1',
+                                                    'level2' => 'Nivel 2',
+                                                    'level3' => 'Nivel 3',
+                                                ])
+                                                ->default('general')
+                                                ->required(),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('¿Qué verificamos?')
                                                 ->required()
@@ -214,11 +278,21 @@ class TemplateVersionsRelationManager extends RelationManager
                                                 ->content('✓ OK  |  ✗ Mal  |  - N/A + Observaciones'),
                                         ]),
 
-                                    // BLOQUE: Tabla
+                                    // BLOQUE: Tabla con campos anidados
                                     Forms\Components\Builder\Block::make('table')
                                         ->label('📊 Tabla de datos')
                                         ->icon('heroicon-o-table-cells')
                                         ->schema([
+                                            Forms\Components\Select::make('category')
+                                                ->label('🏷️ Nivel de mantenimiento')
+                                                ->options([
+                                                    'general' => 'General',
+                                                    'level1' => 'Nivel 1',
+                                                    'level2' => 'Nivel 2',
+                                                    'level3' => 'Nivel 3',
+                                                ])
+                                                ->default('general')
+                                                ->required(),
                                             Forms\Components\TextInput::make('label')
                                                 ->label('Título de la tabla')
                                                 ->required()
@@ -227,38 +301,98 @@ class TemplateVersionsRelationManager extends RelationManager
                                                 ->label('ID interno')
                                                 ->required()
                                                 ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Repeater::make('columns')
-                                                ->label('Columnas de la tabla')
-                                                ->schema([
-                                                    Forms\Components\TextInput::make('label')
-                                                        ->label('📌 Encabezado')
-                                                        ->required()
-                                                        ->placeholder('ej: Componente'),
-                                                    Forms\Components\TextInput::make('key')
-                                                        ->label('🔑 ID')
-                                                        ->required()
-                                                        ->regex('/^[a-z0-9_-]+$/')
-                                                        ->placeholder('ej: componente'),
-                                                    Forms\Components\Select::make('type')
-                                                        ->label('Tipo')
-                                                        ->options([
-                                                            'text' => 'Texto',
-                                                            'number' => 'Número',
-                                                        ])
-                                                        ->default('text'),
+
+                                            Forms\Components\Builder::make('columns')
+                                                ->label('Columnas de la tabla (puedes usar diferentes tipos de campo)')
+                                                ->blocks([
+                                                    // Columna tipo texto
+                                                    Forms\Components\Builder\Block::make('text')
+                                                        ->label('📝 Texto')
+                                                        ->icon('heroicon-o-pencil-square')
+                                                        ->schema([
+                                                            Forms\Components\TextInput::make('label')
+                                                                ->label('Encabezado')
+                                                                ->required(),
+                                                            Forms\Components\TextInput::make('key')
+                                                                ->label('ID')
+                                                                ->required()
+                                                                ->regex('/^[a-z0-9_-]+$/'),
+                                                            Forms\Components\TextInput::make('placeholder')
+                                                                ->label('Ayuda'),
+                                                        ]),
+
+                                                    // Columna tipo número
+                                                    Forms\Components\Builder\Block::make('number')
+                                                        ->label('🔢 Número')
+                                                        ->icon('heroicon-o-hashtag')
+                                                        ->schema([
+                                                            Forms\Components\TextInput::make('label')
+                                                                ->label('Encabezado')
+                                                                ->required(),
+                                                            Forms\Components\TextInput::make('key')
+                                                                ->label('ID')
+                                                                ->required()
+                                                                ->regex('/^[a-z0-9_-]+$/'),
+                                                            Forms\Components\TextInput::make('unit')
+                                                                ->label('Unidad')
+                                                                ->placeholder('ej: mm, kg'),
+                                                        ]),
+
+                                                    // Columna tipo fecha
+                                                    Forms\Components\Builder\Block::make('date')
+                                                        ->label('📅 Fecha')
+                                                        ->icon('heroicon-o-calendar')
+                                                        ->schema([
+                                                            Forms\Components\TextInput::make('label')
+                                                                ->label('Encabezado')
+                                                                ->required(),
+                                                            Forms\Components\TextInput::make('key')
+                                                                ->label('ID')
+                                                                ->required()
+                                                                ->regex('/^[a-z0-9_-]+$/'),
+                                                        ]),
+
+                                                    // Columna tipo select
+                                                    Forms\Components\Builder\Block::make('select')
+                                                        ->label('📑 Selección')
+                                                        ->icon('heroicon-o-queue-list')
+                                                        ->schema([
+                                                            Forms\Components\TextInput::make('label')
+                                                                ->label('Encabezado')
+                                                                ->required(),
+                                                            Forms\Components\TextInput::make('key')
+                                                                ->label('ID')
+                                                                ->required()
+                                                                ->regex('/^[a-z0-9_-]+$/'),
+                                                            Forms\Components\Repeater::make('options')
+                                                                ->label('Opciones')
+                                                                ->simple(
+                                                                    Forms\Components\TextInput::make('value')
+                                                                        ->required()
+                                                                )
+                                                                ->defaultItems(2),
+                                                        ]),
+
+                                                    // Columna tipo tristate
+                                                    Forms\Components\Builder\Block::make('tristate')
+                                                        ->label('✓✗ Tres estados')
+                                                        ->icon('heroicon-o-check-circle')
+                                                        ->schema([
+                                                            Forms\Components\TextInput::make('label')
+                                                                ->label('Encabezado')
+                                                                ->required(),
+                                                            Forms\Components\TextInput::make('key')
+                                                                ->label('ID')
+                                                                ->required()
+                                                                ->regex('/^[a-z0-9_-]+$/'),
+                                                        ]),
                                                 ])
-                                                ->columns(3)
-                                                ->defaultItems(2)
+                                                ->blockNumbers(false)
                                                 ->collapsible()
-                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Columna')
-                                                ->helperText('El técnico podrá añadir múltiples filas'),
+                                                ->defaultItems(2)
+                                                ->helperText('El técnico podrá añadir múltiples filas con estos campos'),
                                         ]),
                                 ])
-                                ->blockNumbers(false)
-                                ->addActionLabel('➕ Añadir bloque')
-                                ->collapsible()
-                                ->cloneable()
-                                ->reorderable()
                                 ->columnSpanFull(),
                         ])
                         ->itemLabel(fn (array $state): ?string => $state['title'] ?? 'Nueva sección')
@@ -275,6 +409,7 @@ class TemplateVersionsRelationManager extends RelationManager
                                 [
                                     'type' => 'tristate',
                                     'data' => [
+                                        'category' => 'general',
                                         'key' => 'estado_general',
                                         'label' => 'Estado general',
                                         'required' => true,
