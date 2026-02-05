@@ -88,34 +88,7 @@ class TemplateVersionsRelationManager extends RelationManager
                                 ->collapsible()
                                 ->cloneable()
                                 ->reorderable()
-                                ->itemLabel(function (array $state): string {
-                                    // Extract data from state
-                                    $label = $state['label'] ?? 'Sin título';
-                                    $category = $state['category'] ?? 'general';
-                                    $width = $state['width'] ?? 'full';
-
-                                    // Category badges with colors
-                                    $categoryBadges = [
-                                        'general' => '🟢 General',
-                                        'level1' => '🔵 Nivel 1',
-                                        'level2' => '🟡 Nivel 2',
-                                        'level3' => '🔴 Nivel 3',
-                                    ];
-
-                                    // Width visual indicators
-                                    $widthIndicators = [
-                                        'full' => '█████████ 100%',
-                                        'half' => '████▒▒▒▒▒ 50%',
-                                        'third' => '███▒▒▒▒▒▒ 33%',
-                                        'two-thirds' => '██████▒▒▒ 66%',
-                                    ];
-
-                                    $categoryBadge = $categoryBadges[$category] ?? $category;
-                                    $widthIndicator = $widthIndicators[$width] ?? $width;
-
-                                    // Build rich label
-                                    return "📌 {$label} | {$categoryBadge} | {$widthIndicator}";
-                                })
+                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
                                 ->blocks([
                                     // BLOQUE: Texto corto
                                     Forms\Components\Builder\Block::make('text')
