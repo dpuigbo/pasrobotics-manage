@@ -88,7 +88,6 @@ class TemplateVersionsRelationManager extends RelationManager
                                 ->collapsible()
                                 ->cloneable()
                                 ->reorderable()
-                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
                                 ->blocks([
                                     // BLOQUE: Texto corto
                                     Forms\Components\Builder\Block::make('text')
