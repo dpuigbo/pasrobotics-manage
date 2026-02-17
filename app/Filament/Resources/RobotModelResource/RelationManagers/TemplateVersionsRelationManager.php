@@ -94,54 +94,119 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📝 Texto corto')
                                         ->icon('heroicon-o-pencil')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General (todos los niveles)',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo (100%)',
-                                                        'half' => 'Mitad (50%)',
-                                                        'third' => 'Tercio (33%)',
-                                                        'two-thirds' => 'Dos tercios (66%)',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Etiqueta')
-                                                ->required()
-                                                ->placeholder('¿Qué pregunta hacemos?'),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->placeholder('ej: temperatura_aceite')
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Grid::make(2)->schema([
-                                                Forms\Components\Toggle::make('required')
-                                                    ->label('Obligatorio')
-                                                    ->default(false),
-                                                Forms\Components\Toggle::make('with_observation')
-                                                    ->label('Con observaciones')
-                                                    ->default(false),
-                                            ]),
-                                            Forms\Components\TextInput::make('placeholder')
-                                                ->label('Texto de ayuda (placeholder)')
-                                                ->placeholder('Aparece dentro del campo'),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda (descripción)')
-                                                ->placeholder('Explicación adicional que aparece debajo del campo')
-                                                ->rows(2),
+                                            // Visual Preview Section
+                                            Forms\Components\Section::make()
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Campo sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $required = $get('required') ? ' *' : '';
+
+                                                            $categoryColors = [
+                                                                'general' => '🟢',
+                                                                'level1' => '🔵',
+                                                                'level2' => '🟡',
+                                                                'level3' => '🔴',
+                                                            ];
+
+                                                            $widthBars = [
+                                                                'full' => '▓▓▓▓▓▓▓▓▓▓ 100%',
+                                                                'half' => '▓▓▓▓▓░░░░░ 50%',
+                                                                'third' => '▓▓▓░░░░░░░ 33%',
+                                                                'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%',
+                                                            ];
+
+                                                            $categoryIcon = $categoryColors[$category] ?? '⚪';
+                                                            $widthBar = $widthBars[$width] ?? $width;
+
+                                                            return "📝 {$label}{$required}\n{$categoryIcon} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBar}";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])
+                                                ->columnSpanFull()
+                                                ->collapsed(false),
+
+                                            // Configuration Section
+                                            Forms\Components\Section::make('Configuración del campo')
+                                                ->schema([
+                                                    Forms\Components\TextInput::make('label')
+                                                        ->label('📌 Etiqueta del campo')
+                                                        ->required()
+                                                        ->live(onBlur: true)
+                                                        ->placeholder('¿Qué pregunta hacemos?')
+                                                        ->columnSpanFull(),
+
+                                                    Forms\Components\TextInput::make('key')
+                                                        ->label('🔑 ID interno')
+                                                        ->required()
+                                                        ->placeholder('ej: temperatura_aceite')
+                                                        ->regex('/^[a-z0-9_-]+$/')
+                                                        ->helperText('Solo letras minúsculas, números, guiones y guiones bajos')
+                                                        ->columnSpanFull(),
+
+                                                    Forms\Components\Grid::make(3)->schema([
+                                                        Forms\Components\Select::make('category')
+                                                            ->label('🏷️ Nivel de mantenimiento')
+                                                            ->options([
+                                                                'general' => '🟢 General (todos los niveles)',
+                                                                'level1' => '🔵 Nivel 1',
+                                                                'level2' => '🟡 Nivel 2',
+                                                                'level3' => '🔴 Nivel 3',
+                                                            ])
+                                                            ->default('general')
+                                                            ->required()
+                                                            ->live()
+                                                            ->columnSpan(2),
+
+                                                        Forms\Components\Select::make('width')
+                                                            ->label('📐 Ancho en pantalla')
+                                                            ->options([
+                                                                'full' => '▓▓▓▓▓▓▓▓▓▓ 100%',
+                                                                'half' => '▓▓▓▓▓░░░░░ 50%',
+                                                                'third' => '▓▓▓░░░░░░░ 33%',
+                                                                'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%',
+                                                            ])
+                                                            ->default('full')
+                                                            ->required()
+                                                            ->live()
+                                                            ->columnSpan(1),
+                                                    ]),
+                                                ])
+                                                ->columnSpanFull()
+                                                ->collapsible(),
+
+                                            // Options Section
+                                            Forms\Components\Section::make('Opciones adicionales')
+                                                ->schema([
+                                                    Forms\Components\Grid::make(2)->schema([
+                                                        Forms\Components\Toggle::make('required')
+                                                            ->label('⚠️ Campo obligatorio')
+                                                            ->default(false)
+                                                            ->live()
+                                                            ->inline(false),
+                                                        Forms\Components\Toggle::make('with_observation')
+                                                            ->label('💬 Permitir observaciones')
+                                                            ->default(false)
+                                                            ->inline(false),
+                                                    ]),
+
+                                                    Forms\Components\TextInput::make('placeholder')
+                                                        ->label('💡 Texto de ayuda (placeholder)')
+                                                        ->placeholder('Aparece dentro del campo cuando está vacío')
+                                                        ->columnSpanFull(),
+
+                                                    Forms\Components\Textarea::make('help')
+                                                        ->label('📖 Descripción de ayuda')
+                                                        ->placeholder('Explicación adicional que aparece debajo del campo')
+                                                        ->rows(2)
+                                                        ->columnSpanFull(),
+                                                ])
+                                                ->columnSpanFull()
+                                                ->collapsible()
+                                                ->collapsed(),
                                         ]),
 
                                     // BLOQUE: Número
@@ -149,51 +214,54 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('🔢 Número')
                                         ->icon('heroicon-o-hashtag')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo (100%)',
-                                                        'half' => 'Mitad (50%)',
-                                                        'third' => 'Tercio (33%)',
-                                                        'two-thirds' => 'Dos tercios (66%)',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Etiqueta')
-                                                ->required()
-                                                ->placeholder('¿Qué medimos?'),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Grid::make(2)->schema([
-                                                Forms\Components\Toggle::make('required')
-                                                    ->label('Obligatorio'),
-                                                Forms\Components\Toggle::make('with_observation')
-                                                    ->label('Con observaciones'),
-                                            ]),
-                                            Forms\Components\TextInput::make('placeholder')
-                                                ->label('Unidad de medida')
-                                                ->placeholder('ej: mm, kg, ºC'),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda (descripción)')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
+                                            Forms\Components\Section::make()
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Campo numérico sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $unit = $get('placeholder') ? ' (' . $get('placeholder') . ')' : '';
+                                                            $required = $get('required') ? ' *' : '';
+
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+                                                            $widthBars = ['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'];
+
+                                                            return "🔢 {$label}{$unit}{$required}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBars[$width]}";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración del campo')->schema([
+                                                Forms\Components\TextInput::make('label')
+                                                    ->label('📌 Etiqueta del campo')
+                                                    ->required()->live(onBlur: true)
+                                                    ->placeholder('¿Qué medimos?')->columnSpanFull(),
+                                                Forms\Components\TextInput::make('key')
+                                                    ->label('🔑 ID interno')->required()
+                                                    ->placeholder('ej: temperatura_motor')->regex('/^[a-z0-9_-]+$/')
+                                                    ->helperText('Solo letras minúsculas, números, guiones y guiones bajos')->columnSpanFull(),
+                                                Forms\Components\Grid::make(3)->schema([
+                                                    Forms\Components\Select::make('category')
+                                                        ->label('🏷️ Nivel de mantenimiento')
+                                                        ->options(['general' => '🟢 General (todos los niveles)', 'level1' => '🔵 Nivel 1', 'level2' => '🟡 Nivel 2', 'level3' => '🔴 Nivel 3'])
+                                                        ->default('general')->required()->live()->columnSpan(2),
+                                                    Forms\Components\Select::make('width')
+                                                        ->label('📐 Ancho en pantalla')
+                                                        ->options(['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'])
+                                                        ->default('full')->required()->live()->columnSpan(1),
+                                                ]),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Opciones adicionales')->schema([
+                                                Forms\Components\Grid::make(2)->schema([
+                                                    Forms\Components\Toggle::make('required')->label('⚠️ Campo obligatorio')->default(false)->live()->inline(false),
+                                                    Forms\Components\Toggle::make('with_observation')->label('💬 Permitir observaciones')->default(false)->inline(false),
+                                                ]),
+                                                Forms\Components\TextInput::make('placeholder')->label('📏 Unidad de medida')->placeholder('ej: mm, kg, ºC')->live(onBlur: true)->columnSpanFull(),
+                                                Forms\Components\Textarea::make('help')->label('📖 Descripción de ayuda')->placeholder('Explicación adicional')->rows(2)->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
 
                                     // BLOQUE: Fecha
@@ -201,43 +269,37 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📅 Fecha')
                                         ->icon('heroicon-o-calendar')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo',
-                                                        'half' => 'Mitad',
-                                                        'third' => 'Tercio',
-                                                        'two-thirds' => 'Dos tercios',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Etiqueta')
-                                                ->required(),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Toggle::make('required')
-                                                ->label('Obligatorio'),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
+                                            Forms\Components\Section::make()
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Campo de fecha sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $required = $get('required') ? ' *' : '';
+
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+                                                            $widthBars = ['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'];
+
+                                                            return "📅 {$label}{$required}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBars[$width]}";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración del campo')->schema([
+                                                Forms\Components\TextInput::make('label')->label('📌 Etiqueta del campo')->required()->live(onBlur: true)->placeholder('ej: Fecha de mantenimiento')->columnSpanFull(),
+                                                Forms\Components\TextInput::make('key')->label('🔑 ID interno')->required()->placeholder('ej: fecha_mantenimiento')->regex('/^[a-z0-9_-]+$/')->helperText('Solo letras minúsculas, números, guiones y guiones bajos')->columnSpanFull(),
+                                                Forms\Components\Grid::make(3)->schema([
+                                                    Forms\Components\Select::make('category')->label('🏷️ Nivel de mantenimiento')->options(['general' => '🟢 General (todos los niveles)', 'level1' => '🔵 Nivel 1', 'level2' => '🟡 Nivel 2', 'level3' => '🔴 Nivel 3'])->default('general')->required()->live()->columnSpan(2),
+                                                    Forms\Components\Select::make('width')->label('📐 Ancho en pantalla')->options(['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'])->default('full')->required()->live()->columnSpan(1),
+                                                ]),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Opciones adicionales')->schema([
+                                                Forms\Components\Toggle::make('required')->label('⚠️ Campo obligatorio')->default(false)->live()->inline(false),
+                                                Forms\Components\Textarea::make('help')->label('📖 Descripción de ayuda')->placeholder('Explicación adicional')->rows(2)->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
 
                                     // BLOQUE: Texto largo
@@ -245,45 +307,38 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📄 Texto largo')
                                         ->icon('heroicon-o-document-text')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo',
-                                                        'half' => 'Mitad',
-                                                        'third' => 'Tercio',
-                                                        'two-thirds' => 'Dos tercios',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Etiqueta')
-                                                ->required(),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Toggle::make('required')
-                                                ->label('Obligatorio'),
-                                            Forms\Components\TextInput::make('placeholder')
-                                                ->label('Texto de ayuda (placeholder)'),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda (descripción)')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
+                                            Forms\Components\Section::make()
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Campo de texto largo sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $required = $get('required') ? ' *' : '';
+
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+                                                            $widthBars = ['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'];
+
+                                                            return "📄 {$label}{$required}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBars[$width]}";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración del campo')->schema([
+                                                Forms\Components\TextInput::make('label')->label('📌 Etiqueta del campo')->required()->live(onBlur: true)->placeholder('ej: Observaciones generales')->columnSpanFull(),
+                                                Forms\Components\TextInput::make('key')->label('🔑 ID interno')->required()->placeholder('ej: observaciones_generales')->regex('/^[a-z0-9_-]+$/')->helperText('Solo letras minúsculas, números, guiones y guiones bajos')->columnSpanFull(),
+                                                Forms\Components\Grid::make(3)->schema([
+                                                    Forms\Components\Select::make('category')->label('🏷️ Nivel de mantenimiento')->options(['general' => '🟢 General (todos los niveles)', 'level1' => '🔵 Nivel 1', 'level2' => '🟡 Nivel 2', 'level3' => '🔴 Nivel 3'])->default('general')->required()->live()->columnSpan(2),
+                                                    Forms\Components\Select::make('width')->label('📐 Ancho en pantalla')->options(['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'])->default('full')->required()->live()->columnSpan(1),
+                                                ]),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Opciones adicionales')->schema([
+                                                Forms\Components\Toggle::make('required')->label('⚠️ Campo obligatorio')->default(false)->live()->inline(false),
+                                                Forms\Components\TextInput::make('placeholder')->label('💡 Texto de ayuda (placeholder)')->placeholder('Aparece dentro del campo cuando está vacío')->columnSpanFull(),
+                                                Forms\Components\Textarea::make('help')->label('📖 Descripción de ayuda')->placeholder('Explicación adicional')->rows(2)->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
 
                                     // BLOQUE: Lista desplegable
@@ -291,57 +346,49 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📑 Lista desplegable')
                                         ->icon('heroicon-o-queue-list')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo',
-                                                        'half' => 'Mitad',
-                                                        'third' => 'Tercio',
-                                                        'two-thirds' => 'Dos tercios',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Etiqueta')
-                                                ->required(),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Toggle::make('required')
-                                                ->label('Obligatorio'),
-                                            Forms\Components\Repeater::make('options')
-                                                ->label('Opciones disponibles')
+                                            Forms\Components\Section::make()
                                                 ->schema([
-                                                    Forms\Components\TextInput::make('value')
-                                                        ->label('Valor')
-                                                        ->required(),
-                                                    Forms\Components\TextInput::make('label')
-                                                        ->label('Texto')
-                                                        ->required(),
-                                                ])
-                                                ->columns(2)
-                                                ->defaultItems(2)
-                                                ->collapsible()
-                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción'),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Lista desplegable sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $required = $get('required') ? ' *' : '';
+                                                            $options = $get('options') ?: [];
+                                                            $optCount = count($options);
+
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+                                                            $widthBars = ['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'];
+
+                                                            return "📑 {$label}{$required}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBars[$width]}\n\n📋 Opciones configuradas: {$optCount}";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración del campo')->schema([
+                                                Forms\Components\TextInput::make('label')->label('📌 Etiqueta del campo')->required()->live(onBlur: true)->placeholder('ej: Estado del equipo')->columnSpanFull(),
+                                                Forms\Components\TextInput::make('key')->label('🔑 ID interno')->required()->placeholder('ej: estado_equipo')->regex('/^[a-z0-9_-]+$/')->helperText('Solo letras minúsculas, números, guiones y guiones bajos')->columnSpanFull(),
+                                                Forms\Components\Grid::make(3)->schema([
+                                                    Forms\Components\Select::make('category')->label('🏷️ Nivel de mantenimiento')->options(['general' => '🟢 General (todos los niveles)', 'level1' => '🔵 Nivel 1', 'level2' => '🟡 Nivel 2', 'level3' => '🔴 Nivel 3'])->default('general')->required()->live()->columnSpan(2),
+                                                    Forms\Components\Select::make('width')->label('📐 Ancho en pantalla')->options(['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'])->default('full')->required()->live()->columnSpan(1),
+                                                ]),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Opciones de la lista')->schema([
+                                                Forms\Components\Toggle::make('required')->label('⚠️ Campo obligatorio')->default(false)->live()->inline(false),
+                                                Forms\Components\Repeater::make('options')
+                                                    ->label('📋 Opciones disponibles')
+                                                    ->schema([
+                                                        Forms\Components\TextInput::make('value')->label('Valor')->required(),
+                                                        Forms\Components\TextInput::make('label')->label('Texto visible')->required(),
+                                                    ])
+                                                    ->columns(2)->defaultItems(2)->collapsible()
+                                                    ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción')
+                                                    ->live()
+                                                    ->columnSpanFull(),
+                                                Forms\Components\Textarea::make('help')->label('📖 Descripción de ayuda')->placeholder('Explicación adicional')->rows(2)->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
 
                                     // BLOQUE: Tres estados (OK/Mal/N/A)
@@ -349,54 +396,117 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('✓✗ Tres estados')
                                         ->icon('heroicon-o-check-circle')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo',
-                                                        'half' => 'Mitad',
-                                                        'third' => 'Tercio',
-                                                        'two-thirds' => 'Dos tercios',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('¿Qué verificamos?')
-                                                ->required()
-                                                ->placeholder('ej: Estado del cableado'),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Grid::make(2)->schema([
-                                                Forms\Components\Toggle::make('required')
-                                                    ->label('Obligatorio')
-                                                    ->default(true),
-                                                Forms\Components\Toggle::make('with_observation')
-                                                    ->label('Con campo de observaciones')
-                                                    ->default(true)
-                                                    ->helperText('Añade un área de texto'),
-                                            ]),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
-                                            Forms\Components\Placeholder::make('preview')
-                                                ->label('')
-                                                ->content('✓ OK  |  ✗ Mal  |  - N/A + Observaciones'),
+                                            // Visual Preview Section
+                                            Forms\Components\Section::make()
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Verificación sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $required = $get('required') ? ' *' : '';
+                                                            $withObs = $get('with_observation') ? ' + 💬 Observaciones' : '';
+
+                                                            $categoryColors = [
+                                                                'general' => '🟢',
+                                                                'level1' => '🔵',
+                                                                'level2' => '🟡',
+                                                                'level3' => '🔴',
+                                                            ];
+
+                                                            $widthBars = [
+                                                                'full' => '▓▓▓▓▓▓▓▓▓▓ 100%',
+                                                                'half' => '▓▓▓▓▓░░░░░ 50%',
+                                                                'third' => '▓▓▓░░░░░░░ 33%',
+                                                                'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%',
+                                                            ];
+
+                                                            $categoryIcon = $categoryColors[$category] ?? '⚪';
+                                                            $widthBar = $widthBars[$width] ?? $width;
+
+                                                            return "✓✗ {$label}{$required}\n{$categoryIcon} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBar}\n\n📋 Vista previa: ✓ OK  |  ✗ Mal  |  - N/A{$withObs}";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])
+                                                ->columnSpanFull()
+                                                ->collapsed(false),
+
+                                            // Configuration Section
+                                            Forms\Components\Section::make('Configuración del campo')
+                                                ->schema([
+                                                    Forms\Components\TextInput::make('label')
+                                                        ->label('📌 ¿Qué verificamos?')
+                                                        ->required()
+                                                        ->live(onBlur: true)
+                                                        ->placeholder('ej: Estado del cableado')
+                                                        ->columnSpanFull(),
+
+                                                    Forms\Components\TextInput::make('key')
+                                                        ->label('🔑 ID interno')
+                                                        ->required()
+                                                        ->placeholder('ej: estado_cableado')
+                                                        ->regex('/^[a-z0-9_-]+$/')
+                                                        ->helperText('Solo letras minúsculas, números, guiones y guiones bajos')
+                                                        ->columnSpanFull(),
+
+                                                    Forms\Components\Grid::make(3)->schema([
+                                                        Forms\Components\Select::make('category')
+                                                            ->label('🏷️ Nivel de mantenimiento')
+                                                            ->options([
+                                                                'general' => '🟢 General (todos los niveles)',
+                                                                'level1' => '🔵 Nivel 1',
+                                                                'level2' => '🟡 Nivel 2',
+                                                                'level3' => '🔴 Nivel 3',
+                                                            ])
+                                                            ->default('general')
+                                                            ->required()
+                                                            ->live()
+                                                            ->columnSpan(2),
+
+                                                        Forms\Components\Select::make('width')
+                                                            ->label('📐 Ancho en pantalla')
+                                                            ->options([
+                                                                'full' => '▓▓▓▓▓▓▓▓▓▓ 100%',
+                                                                'half' => '▓▓▓▓▓░░░░░ 50%',
+                                                                'third' => '▓▓▓░░░░░░░ 33%',
+                                                                'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%',
+                                                            ])
+                                                            ->default('full')
+                                                            ->required()
+                                                            ->live()
+                                                            ->columnSpan(1),
+                                                    ]),
+                                                ])
+                                                ->columnSpanFull()
+                                                ->collapsible(),
+
+                                            // Options Section
+                                            Forms\Components\Section::make('Opciones adicionales')
+                                                ->schema([
+                                                    Forms\Components\Grid::make(2)->schema([
+                                                        Forms\Components\Toggle::make('required')
+                                                            ->label('⚠️ Campo obligatorio')
+                                                            ->default(true)
+                                                            ->live()
+                                                            ->inline(false),
+                                                        Forms\Components\Toggle::make('with_observation')
+                                                            ->label('💬 Con campo de observaciones')
+                                                            ->default(true)
+                                                            ->live()
+                                                            ->inline(false)
+                                                            ->helperText('Añade un área de texto para comentarios'),
+                                                    ]),
+
+                                                    Forms\Components\Textarea::make('help')
+                                                        ->label('📖 Descripción de ayuda')
+                                                        ->placeholder('Explicación adicional que aparece debajo del campo')
+                                                        ->rows(2)
+                                                        ->columnSpanFull(),
+                                                ])
+                                                ->columnSpanFull()
+                                                ->collapsible()
+                                                ->collapsed(),
                                         ]),
 
                                     // BLOQUE: Imagen
@@ -404,55 +514,43 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📷 Imagen')
                                         ->icon('heroicon-o-photo')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo',
-                                                        'half' => 'Mitad',
-                                                        'third' => 'Tercio',
-                                                        'two-thirds' => 'Dos tercios',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Etiqueta')
-                                                ->required()
-                                                ->placeholder('ej: Foto del componente'),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Grid::make(2)->schema([
-                                                Forms\Components\Toggle::make('required')
-                                                    ->label('Obligatorio'),
-                                                Forms\Components\Toggle::make('multiple')
-                                                    ->label('Múltiples imágenes')
-                                                    ->helperText('Permitir subir varias imágenes'),
-                                            ]),
-                                            Forms\Components\TextInput::make('max_size')
-                                                ->label('Tamaño máximo (MB)')
-                                                ->numeric()
-                                                ->default(5)
-                                                ->minValue(1)
-                                                ->maxValue(50),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
+                                            Forms\Components\Section::make()
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Campo de imagen sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $required = $get('required') ? ' *' : '';
+                                                            $multiple = $get('multiple') ? ' (múltiples)' : '';
+                                                            $maxSize = $get('max_size') ?: 5;
+
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+                                                            $widthBars = ['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'];
+
+                                                            return "📷 {$label}{$multiple}{$required}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBars[$width]}\n\n💾 Tamaño máx: {$maxSize} MB";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración del campo')->schema([
+                                                Forms\Components\TextInput::make('label')->label('📌 Etiqueta del campo')->required()->live(onBlur: true)->placeholder('ej: Foto del componente')->columnSpanFull(),
+                                                Forms\Components\TextInput::make('key')->label('🔑 ID interno')->required()->placeholder('ej: foto_componente')->regex('/^[a-z0-9_-]+$/')->helperText('Solo letras minúsculas, números, guiones y guiones bajos')->columnSpanFull(),
+                                                Forms\Components\Grid::make(3)->schema([
+                                                    Forms\Components\Select::make('category')->label('🏷️ Nivel de mantenimiento')->options(['general' => '🟢 General (todos los niveles)', 'level1' => '🔵 Nivel 1', 'level2' => '🟡 Nivel 2', 'level3' => '🔴 Nivel 3'])->default('general')->required()->live()->columnSpan(2),
+                                                    Forms\Components\Select::make('width')->label('📐 Ancho en pantalla')->options(['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%', 'third' => '▓▓▓░░░░░░░ 33%', 'two-thirds' => '▓▓▓▓▓▓▓░░░ 67%'])->default('full')->required()->live()->columnSpan(1),
+                                                ]),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Opciones adicionales')->schema([
+                                                Forms\Components\Grid::make(2)->schema([
+                                                    Forms\Components\Toggle::make('required')->label('⚠️ Campo obligatorio')->default(false)->live()->inline(false),
+                                                    Forms\Components\Toggle::make('multiple')->label('📸 Múltiples imágenes')->default(false)->live()->inline(false)->helperText('Permitir subir varias imágenes'),
+                                                ]),
+                                                Forms\Components\TextInput::make('max_size')->label('💾 Tamaño máximo (MB)')->numeric()->default(5)->minValue(1)->maxValue(50)->live(onBlur: true),
+                                                Forms\Components\Textarea::make('help')->label('📖 Descripción de ayuda')->placeholder('Explicación adicional')->rows(2)->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
 
                                     // BLOQUE: Archivo
@@ -460,56 +558,45 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📎 Archivo adjunto')
                                         ->icon('heroicon-o-paper-clip')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo',
-                                                        'half' => 'Mitad',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Etiqueta')
-                                                ->required()
-                                                ->placeholder('ej: Documentos de calibración'),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Grid::make(2)->schema([
-                                                Forms\Components\Toggle::make('required')
-                                                    ->label('Obligatorio'),
-                                                Forms\Components\Toggle::make('multiple')
-                                                    ->label('Múltiples archivos'),
-                                            ]),
-                                            Forms\Components\TextInput::make('accepted_types')
-                                                ->label('Tipos de archivo permitidos')
-                                                ->placeholder('ej: pdf,doc,docx,xlsx')
-                                                ->helperText('Separar con comas'),
-                                            Forms\Components\TextInput::make('max_size')
-                                                ->label('Tamaño máximo (MB)')
-                                                ->numeric()
-                                                ->default(10)
-                                                ->minValue(1)
-                                                ->maxValue(100),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
+                                            Forms\Components\Section::make()
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Campo de archivo sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $required = $get('required') ? ' *' : '';
+                                                            $multiple = $get('multiple') ? ' (múltiples)' : '';
+                                                            $maxSize = $get('max_size') ?: 10;
+                                                            $types = $get('accepted_types') ?: 'todos';
+
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+                                                            $widthBars = ['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%'];
+
+                                                            return "📎 {$label}{$multiple}{$required}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBars[$width]}\n\n💾 Tamaño máx: {$maxSize} MB | 📄 Tipos: {$types}";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración del campo')->schema([
+                                                Forms\Components\TextInput::make('label')->label('📌 Etiqueta del campo')->required()->live(onBlur: true)->placeholder('ej: Documentos de calibración')->columnSpanFull(),
+                                                Forms\Components\TextInput::make('key')->label('🔑 ID interno')->required()->placeholder('ej: docs_calibracion')->regex('/^[a-z0-9_-]+$/')->helperText('Solo letras minúsculas, números, guiones y guiones bajos')->columnSpanFull(),
+                                                Forms\Components\Grid::make(3)->schema([
+                                                    Forms\Components\Select::make('category')->label('🏷️ Nivel de mantenimiento')->options(['general' => '🟢 General (todos los niveles)', 'level1' => '🔵 Nivel 1', 'level2' => '🟡 Nivel 2', 'level3' => '🔴 Nivel 3'])->default('general')->required()->live()->columnSpan(2),
+                                                    Forms\Components\Select::make('width')->label('📐 Ancho en pantalla')->options(['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%'])->default('full')->required()->live()->columnSpan(1),
+                                                ]),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Opciones adicionales')->schema([
+                                                Forms\Components\Grid::make(2)->schema([
+                                                    Forms\Components\Toggle::make('required')->label('⚠️ Campo obligatorio')->default(false)->live()->inline(false),
+                                                    Forms\Components\Toggle::make('multiple')->label('📁 Múltiples archivos')->default(false)->live()->inline(false),
+                                                ]),
+                                                Forms\Components\TextInput::make('accepted_types')->label('📄 Tipos de archivo permitidos')->placeholder('ej: pdf,doc,docx,xlsx')->helperText('Separar con comas')->live(onBlur: true)->columnSpanFull(),
+                                                Forms\Components\TextInput::make('max_size')->label('💾 Tamaño máximo (MB)')->numeric()->default(10)->minValue(1)->maxValue(100)->live(onBlur: true),
+                                                Forms\Components\Textarea::make('help')->label('📖 Descripción de ayuda')->placeholder('Explicación adicional')->rows(2)->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
 
                                     // BLOQUE: Grupo de checkboxes
@@ -517,66 +604,53 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('☑️ Grupo de checkboxes')
                                         ->icon('heroicon-o-check-badge')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo',
-                                                        'half' => 'Mitad',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Título del grupo')
-                                                ->required()
-                                                ->placeholder('ej: Verificaciones de seguridad'),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Repeater::make('options')
-                                                ->label('Opciones de checkbox')
+                                            Forms\Components\Section::make()
                                                 ->schema([
-                                                    Forms\Components\TextInput::make('value')
-                                                        ->label('Valor')
-                                                        ->required(),
-                                                    Forms\Components\TextInput::make('label')
-                                                        ->label('Texto')
-                                                        ->required(),
-                                                ])
-                                                ->columns(2)
-                                                ->defaultItems(3)
-                                                ->collapsible()
-                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción'),
-                                            Forms\Components\Grid::make(2)->schema([
-                                                Forms\Components\TextInput::make('min_selections')
-                                                    ->label('Mínimo de selecciones')
-                                                    ->numeric()
-                                                    ->minValue(0)
-                                                    ->placeholder('0 = opcional'),
-                                                Forms\Components\TextInput::make('max_selections')
-                                                    ->label('Máximo de selecciones')
-                                                    ->numeric()
-                                                    ->minValue(1)
-                                                    ->placeholder('Dejar vacío = sin límite'),
-                                            ]),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Grupo de checkboxes sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $options = $get('options') ?: [];
+                                                            $optCount = count($options);
+                                                            $min = $get('min_selections') ?: 0;
+                                                            $max = $get('max_selections') ?: '∞';
+
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+                                                            $widthBars = ['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%'];
+
+                                                            return "☑️ {$label}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBars[$width]}\n\n📋 Opciones: {$optCount} | Selecciones: {$min}-{$max}";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración del campo')->schema([
+                                                Forms\Components\TextInput::make('label')->label('📌 Título del grupo')->required()->live(onBlur: true)->placeholder('ej: Verificaciones de seguridad')->columnSpanFull(),
+                                                Forms\Components\TextInput::make('key')->label('🔑 ID interno')->required()->placeholder('ej: verificaciones_seguridad')->regex('/^[a-z0-9_-]+$/')->helperText('Solo letras minúsculas, números, guiones y guiones bajos')->columnSpanFull(),
+                                                Forms\Components\Grid::make(3)->schema([
+                                                    Forms\Components\Select::make('category')->label('🏷️ Nivel de mantenimiento')->options(['general' => '🟢 General (todos los niveles)', 'level1' => '🔵 Nivel 1', 'level2' => '🟡 Nivel 2', 'level3' => '🔴 Nivel 3'])->default('general')->required()->live()->columnSpan(2),
+                                                    Forms\Components\Select::make('width')->label('📐 Ancho en pantalla')->options(['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%'])->default('full')->required()->live()->columnSpan(1),
+                                                ]),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Opciones y validación')->schema([
+                                                Forms\Components\Repeater::make('options')
+                                                    ->label('📋 Opciones de checkbox')
+                                                    ->schema([
+                                                        Forms\Components\TextInput::make('value')->label('Valor')->required(),
+                                                        Forms\Components\TextInput::make('label')->label('Texto visible')->required(),
+                                                    ])
+                                                    ->columns(2)->defaultItems(3)->collapsible()
+                                                    ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción')
+                                                    ->live()
+                                                    ->columnSpanFull(),
+                                                Forms\Components\Grid::make(2)->schema([
+                                                    Forms\Components\TextInput::make('min_selections')->label('Mínimo de selecciones')->numeric()->minValue(0)->placeholder('0 = opcional')->live(onBlur: true),
+                                                    Forms\Components\TextInput::make('max_selections')->label('Máximo de selecciones')->numeric()->minValue(1)->placeholder('Dejar vacío = sin límite')->live(onBlur: true),
+                                                ]),
+                                                Forms\Components\Textarea::make('help')->label('📖 Descripción de ayuda')->placeholder('Explicación adicional')->rows(2)->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
 
                                     // BLOQUE: Radio buttons
@@ -584,64 +658,51 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('🔘 Botones de opción')
                                         ->icon('heroicon-o-radio')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo',
-                                                        'half' => 'Mitad',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Pregunta')
-                                                ->required()
-                                                ->placeholder('ej: ¿Estado del equipo?'),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Toggle::make('required')
-                                                ->label('Obligatorio')
-                                                ->default(true),
-                                            Forms\Components\Repeater::make('options')
-                                                ->label('Opciones de respuesta')
+                                            Forms\Components\Section::make()
                                                 ->schema([
-                                                    Forms\Components\TextInput::make('value')
-                                                        ->label('Valor')
-                                                        ->required(),
-                                                    Forms\Components\TextInput::make('label')
-                                                        ->label('Texto')
-                                                        ->required(),
-                                                ])
-                                                ->columns(2)
-                                                ->defaultItems(3)
-                                                ->collapsible()
-                                                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción'),
-                                            Forms\Components\Select::make('layout')
-                                                ->label('Disposición')
-                                                ->options([
-                                                    'vertical' => 'Vertical',
-                                                    'horizontal' => 'Horizontal',
-                                                ])
-                                                ->default('vertical'),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Pregunta sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $required = $get('required') ? ' *' : '';
+                                                            $layout = $get('layout') ?: 'vertical';
+                                                            $options = $get('options') ?: [];
+                                                            $optCount = count($options);
+
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+                                                            $widthBars = ['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%'];
+
+                                                            return "🔘 {$label}{$required}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBars[$width]}\n\n📋 Opciones: {$optCount} | Disposición: " . ucfirst($layout);
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración del campo')->schema([
+                                                Forms\Components\TextInput::make('label')->label('📌 Pregunta')->required()->live(onBlur: true)->placeholder('ej: ¿Estado del equipo?')->columnSpanFull(),
+                                                Forms\Components\TextInput::make('key')->label('🔑 ID interno')->required()->placeholder('ej: estado_equipo')->regex('/^[a-z0-9_-]+$/')->helperText('Solo letras minúsculas, números, guiones y guiones bajos')->columnSpanFull(),
+                                                Forms\Components\Grid::make(3)->schema([
+                                                    Forms\Components\Select::make('category')->label('🏷️ Nivel de mantenimiento')->options(['general' => '🟢 General (todos los niveles)', 'level1' => '🔵 Nivel 1', 'level2' => '🟡 Nivel 2', 'level3' => '🔴 Nivel 3'])->default('general')->required()->live()->columnSpan(2),
+                                                    Forms\Components\Select::make('width')->label('📐 Ancho en pantalla')->options(['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%'])->default('full')->required()->live()->columnSpan(1),
+                                                ]),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Opciones de respuesta')->schema([
+                                                Forms\Components\Toggle::make('required')->label('⚠️ Campo obligatorio')->default(true)->live()->inline(false),
+                                                Forms\Components\Repeater::make('options')
+                                                    ->label('📋 Opciones disponibles')
+                                                    ->schema([
+                                                        Forms\Components\TextInput::make('value')->label('Valor')->required(),
+                                                        Forms\Components\TextInput::make('label')->label('Texto visible')->required(),
+                                                    ])
+                                                    ->columns(2)->defaultItems(3)->collapsible()
+                                                    ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Opción')
+                                                    ->live()
+                                                    ->columnSpanFull(),
+                                                Forms\Components\Select::make('layout')->label('📐 Disposición')->options(['vertical' => '⬇️ Vertical', 'horizontal' => '➡️ Horizontal'])->default('vertical')->live(),
+                                                Forms\Components\Textarea::make('help')->label('📖 Descripción de ayuda')->placeholder('Explicación adicional')->rows(2)->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
 
                                     // BLOQUE: Firma
@@ -649,46 +710,37 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('✍️ Firma digital')
                                         ->icon('heroicon-o-pencil-square')
                                         ->schema([
-                                            Forms\Components\Grid::make(3)->schema([
-                                                Forms\Components\Select::make('category')
-                                                    ->label('🏷️ Nivel de mantenimiento')
-                                                    ->options([
-                                                        'general' => 'General',
-                                                        'level1' => 'Nivel 1',
-                                                        'level2' => 'Nivel 2',
-                                                        'level3' => 'Nivel 3',
-                                                    ])
-                                                    ->default('general')
-                                                    ->required()
-                                                    ->columnSpan(2),
-                                                Forms\Components\Select::make('width')
-                                                    ->label('📐 Ancho')
-                                                    ->options([
-                                                        'full' => 'Completo',
-                                                        'half' => 'Mitad',
-                                                    ])
-                                                    ->default('full')
-                                                    ->required()
-                                                    ->columnSpan(1),
-                                            ]),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Etiqueta')
-                                                ->required()
-                                                ->placeholder('ej: Firma del técnico'),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
-                                            Forms\Components\Toggle::make('required')
-                                                ->label('Obligatorio')
-                                                ->default(true),
-                                            Forms\Components\Textarea::make('help')
-                                                ->label('Texto de ayuda')
-                                                ->placeholder('Explicación adicional')
-                                                ->rows(2),
-                                            Forms\Components\Placeholder::make('info')
-                                                ->label('')
-                                                ->content('⚡ El técnico podrá firmar con el dedo o mouse'),
+                                            Forms\Components\Section::make()
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Firma sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $width = $get('width') ?: 'full';
+                                                            $required = $get('required') ? ' *' : '';
+
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+                                                            $widthBars = ['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%'];
+
+                                                            return "✍️ {$label}{$required}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📐 Ancho: {$widthBars[$width]}\n\n⚡ El técnico podrá firmar con el dedo o mouse";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración del campo')->schema([
+                                                Forms\Components\TextInput::make('label')->label('📌 Etiqueta del campo')->required()->live(onBlur: true)->placeholder('ej: Firma del técnico')->columnSpanFull(),
+                                                Forms\Components\TextInput::make('key')->label('🔑 ID interno')->required()->placeholder('ej: firma_tecnico')->regex('/^[a-z0-9_-]+$/')->helperText('Solo letras minúsculas, números, guiones y guiones bajos')->columnSpanFull(),
+                                                Forms\Components\Grid::make(3)->schema([
+                                                    Forms\Components\Select::make('category')->label('🏷️ Nivel de mantenimiento')->options(['general' => '🟢 General (todos los niveles)', 'level1' => '🔵 Nivel 1', 'level2' => '🟡 Nivel 2', 'level3' => '🔴 Nivel 3'])->default('general')->required()->live()->columnSpan(2),
+                                                    Forms\Components\Select::make('width')->label('📐 Ancho en pantalla')->options(['full' => '▓▓▓▓▓▓▓▓▓▓ 100%', 'half' => '▓▓▓▓▓░░░░░ 50%'])->default('full')->required()->live()->columnSpan(1),
+                                                ]),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Opciones adicionales')->schema([
+                                                Forms\Components\Toggle::make('required')->label('⚠️ Campo obligatorio')->default(true)->live()->inline(false),
+                                                Forms\Components\Textarea::make('help')->label('📖 Descripción de ayuda')->placeholder('Explicación adicional')->rows(2)->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
 
                                     // BLOQUE: Tabla con campos anidados
@@ -696,27 +748,55 @@ class TemplateVersionsRelationManager extends RelationManager
                                         ->label('📊 Tabla de datos')
                                         ->icon('heroicon-o-table-cells')
                                         ->schema([
-                                            Forms\Components\Select::make('category')
-                                                ->label('🏷️ Nivel de mantenimiento')
-                                                ->options([
-                                                    'general' => 'General',
-                                                    'level1' => 'Nivel 1',
-                                                    'level2' => 'Nivel 2',
-                                                    'level3' => 'Nivel 3',
-                                                ])
-                                                ->default('general')
-                                                ->required(),
-                                            Forms\Components\TextInput::make('label')
-                                                ->label('Título de la tabla')
-                                                ->required()
-                                                ->placeholder('ej: Lista de componentes revisados'),
-                                            Forms\Components\TextInput::make('key')
-                                                ->label('ID interno')
-                                                ->required()
-                                                ->regex('/^[a-z0-9_-]+$/'),
+                                            Forms\Components\Section::make()
+                                                ->schema([
+                                                    Forms\Components\Placeholder::make('preview')
+                                                        ->label('')
+                                                        ->content(function ($get) {
+                                                            $label = $get('label') ?: 'Tabla sin título';
+                                                            $category = $get('category') ?: 'general';
+                                                            $columns = $get('columns') ?: [];
+                                                            $colCount = count($columns);
 
-                                            Forms\Components\Repeater::make('columns')
-                                                ->label('📊 Columnas de la tabla')
+                                                            $categoryColors = ['general' => '🟢', 'level1' => '🔵', 'level2' => '🟡', 'level3' => '🔴'];
+
+                                                            return "📊 {$label}\n{$categoryColors[$category]} Categoría: " . ucfirst($category) . " | 📋 Columnas: {$colCount}\n\n⚡ El técnico podrá añadir múltiples filas a esta tabla";
+                                                        })
+                                                        ->columnSpanFull(),
+                                                ])->columnSpanFull()->collapsed(false),
+
+                                            Forms\Components\Section::make('Configuración de la tabla')->schema([
+                                                Forms\Components\TextInput::make('label')
+                                                    ->label('📌 Título de la tabla')
+                                                    ->required()
+                                                    ->live(onBlur: true)
+                                                    ->placeholder('ej: Lista de componentes revisados')
+                                                    ->columnSpanFull(),
+
+                                                Forms\Components\TextInput::make('key')
+                                                    ->label('🔑 ID interno')
+                                                    ->required()
+                                                    ->placeholder('ej: lista_componentes')
+                                                    ->regex('/^[a-z0-9_-]+$/')
+                                                    ->helperText('Solo letras minúsculas, números, guiones y guiones bajos')
+                                                    ->columnSpanFull(),
+
+                                                Forms\Components\Select::make('category')
+                                                    ->label('🏷️ Nivel de mantenimiento')
+                                                    ->options([
+                                                        'general' => '🟢 General (todos los niveles)',
+                                                        'level1' => '🔵 Nivel 1',
+                                                        'level2' => '🟡 Nivel 2',
+                                                        'level3' => '🔴 Nivel 3',
+                                                    ])
+                                                    ->default('general')
+                                                    ->required()
+                                                    ->live(),
+                                            ])->columnSpanFull()->collapsible(),
+
+                                            Forms\Components\Section::make('Columnas de la tabla')->schema([
+                                                Forms\Components\Repeater::make('columns')
+                                                    ->label('📊 Definir columnas')
                                                 ->schema([
                                                     Forms\Components\Select::make('type')
                                                         ->label('Tipo de campo')
@@ -786,7 +866,9 @@ class TemplateVersionsRelationManager extends RelationManager
                                                 ->cloneable()
                                                 ->defaultItems(2)
                                                 ->helperText('El técnico podrá añadir múltiples filas con estos campos en la tabla')
+                                                ->live()
                                                 ->columnSpanFull(),
+                                            ])->columnSpanFull()->collapsible()->collapsed(),
                                         ]),
                                 ])
                                 ->columnSpanFull(),
