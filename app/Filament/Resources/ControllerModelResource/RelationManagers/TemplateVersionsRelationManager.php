@@ -62,6 +62,7 @@ class TemplateVersionsRelationManager extends RelationManager
                                 ->label('📋 Título de la sección')
                                 ->required()
                                 ->placeholder('ej: Inspección General')
+                                ->live(onBlur: true)
                                 ->columnSpanFull(),
 
                             Forms\Components\Grid::make(3)->schema([
@@ -79,6 +80,7 @@ class TemplateVersionsRelationManager extends RelationManager
                                     ])
                                     ->required()
                                     ->default('informacion_general')
+                                    ->live()
                                     ->columnSpan(2),
 
                                 Forms\Components\Select::make('style')
@@ -889,7 +891,19 @@ class TemplateVersionsRelationManager extends RelationManager
                                 ])
                                 ->columnSpanFull(),
                         ])
-                        ->itemLabel(fn (array $state): ?string => $state['title'] ?? 'Nueva sección')
+                        ->itemLabel(fn (array $state): ?string =>
+                            ($state['title'] ?? 'Nueva sección') . ' • ' . match($state['category'] ?? 'informacion_general') {
+                                'informacion_general' => '📋 Info General',
+                                'control_unidad_mecanica' => '🤖 Unidad Mecánica',
+                                'control_armario' => '🗄️ Armario',
+                                'control_programacion' => '💻 Programación',
+                                'control_sistema' => '⚙️ Sistema',
+                                'intercambio_equipos' => '🔄 Intercambio',
+                                'observaciones_generales' => '📝 Observaciones',
+                                'estado_aceptacion' => '✅ Estado',
+                                default => '📋 Info General',
+                            }
+                        )
                         ->collapsed()
                         ->collapsible()
                         ->reorderable()
