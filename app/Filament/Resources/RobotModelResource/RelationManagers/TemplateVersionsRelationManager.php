@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\RobotModelResource\RelationManagers;
 
+use App\Support\SchemaToFilament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -981,6 +982,28 @@ class TemplateVersionsRelationManager extends RelationManager
                     ->label('Nueva plantilla'),
             ])
             ->actions([
+                Tables\Actions\Action::make('preview_form')
+                    ->label('Vista previa')
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->modalHeading(fn ($record) => 'Vista previa del formulario — Plantilla v' . $record->version)
+                    ->modalWidth('5xl')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Cerrar')
+                    ->form(function ($record) {
+                        $rawSections = $record->schema['sections'] ?? [];
+
+                        $transformedSections = array_map(function ($section) {
+                            $rawFields = $section['fields'] ?? [];
+                            $fields = array_map(
+                                fn ($block) => array_merge(['type' => $block['type']], $block['data'] ?? []),
+                                $rawFields
+                            );
+                            return ['title' => $section['title'] ?? 'Sección', 'fields' => $fields];
+                        }, $rawSections);
+
+                        return SchemaToFilament::build(['sections' => $transformedSections], 'preview');
+                    }),
                 Tables\Actions\ViewAction::make()
                     ->modalWidth('7xl'),
                 Tables\Actions\EditAction::make()
