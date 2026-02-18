@@ -39,6 +39,9 @@ class RobotModelResource extends Resource
                 ->columnSpanFull()
                 ->nullable(),
 
+            // TEMPORALMENTE DESACTIVADO: Configuración de aceites por eje
+            // Se reactivará cuando la tabla oils esté funcionando correctamente
+            /*
             Forms\Components\Section::make('Configuración de aceites por eje')
                 ->description('Configure el tipo de aceite y volumen para cada eje del robot')
                 ->schema([
@@ -85,6 +88,7 @@ class RobotModelResource extends Resource
                 ->collapsible()
                 ->collapsed(fn ($record) => $record !== null)
                 ->columnSpanFull(),
+            */
         ])->columns(2);
     }
 
