@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RobotModelResource\Pages;
-use App\Filament\Resources\RobotModelResource\RelationManagers;
+use App\Filament\RelationManagers\TemplateVersionsRelationManager;
 use App\Models\MechanicalUnitModel;
 use App\Models\Oil;
 use Filament\Forms;
@@ -114,7 +114,7 @@ class RobotModelResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\TemplateVersionsRelationManager::class,
+            TemplateVersionsRelationManager::class,
         ];
     }
 

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\BlockEditor\BlockRegistry;
 use App\Models\Report;
-use App\Models\ReportComponent;
 use RuntimeException;
 
 class ReportComposer
@@ -11,9 +11,9 @@ class ReportComposer
     public function compose(Report $report): void
     {
         $system = $report->system()->with([
-            'controllerUnit.controllerModel',
-            'mechanicalUnits.robotModel',
-            'driveUnits.driveUnitModel',
+            'controllerUnit.componentModel',
+            'mechanicalUnits.componentModel',
+            'driveUnits.componentModel',
         ])->firstOrFail();
 
         $report->components()->delete();
@@ -22,7 +22,7 @@ class ReportComposer
 
         // CONTROLADORA (1)
         if ($system->controllerUnit) {
-            $tv = $this->resolveTemplateVersionOrFail('controller', $system->controllerUnit->controller_model_id);
+            $tv = $this->resolveTemplateVersionOrFail('controller', $system->controllerUnit->component_model_id);
 
             $report->components()->create([
                 'component_type' => 'controller',
@@ -38,7 +38,7 @@ class ReportComposer
 
         // MECÁNICAS (N)
         foreach ($system->mechanicalUnits->sortBy('id') as $mu) {
-            $tv = $this->resolveTemplateVersionOrFail('mechanical_unit', $mu->robot_model_id);
+            $tv = $this->resolveTemplateVersionOrFail('mechanical_unit', $mu->component_model_id);
 
             $report->components()->create([
                 'component_type' => 'mechanical_unit',
@@ -52,34 +52,13 @@ class ReportComposer
             $order += 10;
         }
 
-        // DRIVE UNITS (auto-assign a ROB_2.. si no asignadas)
+        // DRIVE UNITS
         $mechanicals = $system->mechanicalUnits->sortBy('id')->values();
-        $drives = $system->driveUnits->sortBy('id')->values();
-
-        $alreadyAssigned = $drives->pluck('system_mechanical_unit_id')->filter()->values()->all();
-        $candidates = $mechanicals->slice(1)->reject(fn ($mu) => in_array($mu->id, $alreadyAssigned))->values();
-
-        $idx = 0;
-        foreach ($drives as $du) {
-            if (!$du->system_mechanical_unit_id && isset($candidates[$idx])) {
-                $du->system_mechanical_unit_id = $candidates[$idx]->id;
-                $du->save();
-                $idx++;
-            }
-        }
-
-        $mechanicalById = $mechanicals->keyBy('id');
 
         foreach ($system->driveUnits()->orderBy('id')->get() as $du) {
-            $tv = $this->resolveTemplateVersionOrFail('drive_unit', $du->drive_unit_model_id);
-
-            $muLabel = null;
-            if ($du->system_mechanical_unit_id && $mechanicalById->has($du->system_mechanical_unit_id)) {
-                $muLabel = $mechanicalById[$du->system_mechanical_unit_id]->label;
-            }
+            $tv = $this->resolveTemplateVersionOrFail('drive_unit', $du->component_model_id);
 
             $label = $du->label ?: 'Drive Unit';
-            if ($muLabel) $label .= " → {$muLabel}";
 
             $report->components()->create([
                 'component_type' => 'drive_unit',
@@ -94,10 +73,6 @@ class ReportComposer
         }
     }
 
-    /**
-     * Resolves the active template version for a given component model.
-     * Returns the latest active version, or latest version if no active one exists.
-     */
     private function resolveTemplateVersionOrFail(string $componentType, int $modelId): array
     {
         $tv = \App\Models\ComponentModelTemplateVersion::query()
@@ -106,7 +81,6 @@ class ReportComposer
             ->orderByDesc('version')
             ->first();
 
-        // Fallback: if no active version, get the latest version regardless of status
         if (!$tv) {
             $tv = \App\Models\ComponentModelTemplateVersion::query()
                 ->where('component_model_id', $modelId)
@@ -126,12 +100,18 @@ class ReportComposer
 
     private function initDataFromSchema(array $schema): array
     {
+        // New block-based schema format
+        if (isset($schema['blocks'])) {
+            return PdfGenerator::initializeDataFromSchema($schema);
+        }
+
+        // Legacy section-based schema format (backward compatibility)
         $sections = $schema['sections'] ?? [];
         $out = [];
 
         foreach ($sections as $section) {
             foreach (($section['fields'] ?? []) as $field) {
-                $key = $field['key'] ?? null;
+                $key = $field['key'] ?? ($field['data']['key'] ?? null);
                 if (!$key) continue;
 
                 $type = $field['type'] ?? 'text';
@@ -142,11 +122,12 @@ class ReportComposer
                 }
 
                 if ($type === 'table') {
-                    $rows = $field['rows'] ?? [];
-                    $cols = $field['columns'] ?? [];
+                    $data = $field['data'] ?? $field;
+                    $rows = $data['rows'] ?? $data['fixedRows'] ?? [];
+                    $cols = $data['columns'] ?? [];
                     $table = [];
                     foreach ($rows as $r) {
-                        $row = ['_row_key' => $r['key'] ?? '', '_row_label' => $r['label'] ?? ''];
+                        $row = [];
                         foreach ($cols as $c) {
                             if (!empty($c['key'])) $row[$c['key']] = null;
                         }
