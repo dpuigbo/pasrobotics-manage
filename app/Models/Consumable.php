@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Consumable extends Model
 {
+    protected $table = 'consumables';
+
     protected $fillable = [
         'name',
         'reference',
