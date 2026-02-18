@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ControllerModelResource\Pages;
-use App\Filament\Resources\ControllerModelResource\RelationManagers;
+use App\Filament\RelationManagers\TemplateVersionsRelationManager;
 use App\Models\ControllerModel;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -62,7 +62,7 @@ class ControllerModelResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\TemplateVersionsRelationManager::class,
+            TemplateVersionsRelationManager::class,
         ];
     }
 
