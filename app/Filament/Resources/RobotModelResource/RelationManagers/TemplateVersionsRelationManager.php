@@ -58,11 +58,27 @@ class TemplateVersionsRelationManager extends RelationManager
                     Forms\Components\Repeater::make('schema.sections')
                         ->label('Secciones del formulario')
                         ->schema([
+                            Forms\Components\TextInput::make('title')
+                                ->label('📋 Título de la sección')
+                                ->required()
+                                ->placeholder('ej: Inspección General')
+                                ->columnSpanFull(),
+
                             Forms\Components\Grid::make(3)->schema([
-                                Forms\Components\TextInput::make('title')
-                                    ->label('📋 Título de la sección')
+                                Forms\Components\Select::make('category')
+                                    ->label('📂 Categoría de sección')
+                                    ->options([
+                                        'informacion_general' => '📋 Información general',
+                                        'control_unidad_mecanica' => '🤖 Control de la unidad mecánica',
+                                        'control_armario' => '🗄️ Control del armario',
+                                        'control_programacion' => '💻 Control de la unidad de programación',
+                                        'control_sistema' => '⚙️ Control del sistema',
+                                        'intercambio_equipos' => '🔄 Intercambio de equipos',
+                                        'observaciones_generales' => '📝 Observaciones generales',
+                                        'estado_aceptacion' => '✅ Estado y aceptación',
+                                    ])
                                     ->required()
-                                    ->placeholder('ej: Inspección General')
+                                    ->default('informacion_general')
                                     ->columnSpan(2),
 
                                 Forms\Components\Select::make('style')
