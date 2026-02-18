@@ -63,38 +63,22 @@ class OilResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nombre')
-                    ->sortable()
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('manufacturer')
-                    ->label('Fabricante')
-                    ->sortable()
-                    ->searchable()
-                    ->toggleable(),
+                    ->label('Fabricante'),
 
                 Tables\Columns\TextColumn::make('cost_per_liter')
                     ->label('Coste/L')
-                    ->money('EUR')
-                    ->sortable()
-                    ->toggleable(),
+                    ->numeric(decimalPlaces: 2)
+                    ->prefix('€'),
 
                 Tables\Columns\TextColumn::make('selling_price_per_liter')
                     ->label('Precio venta/L')
-                    ->money('EUR')
-                    ->sortable()
-                    ->toggleable(),
-
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Creado')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->numeric(decimalPlaces: 2)
+                    ->prefix('€'),
             ])
             ->filters([
                 //
@@ -105,8 +89,7 @@ class OilResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
-            ])
-            ->defaultSort('name');
+            ]);
     }
 
     public static function getPages(): array
