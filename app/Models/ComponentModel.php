@@ -13,6 +13,11 @@ class ComponentModel extends Model
         'type',   // controller | mechanical_unit | drive_unit
         'name',
         'notes',
+        'axis_oils_config',
+    ];
+
+    protected $casts = [
+        'axis_oils_config' => 'array',
     ];
 
     public function manufacturer(): BelongsTo

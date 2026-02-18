@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\RobotModelResource\Pages;
 use App\Filament\Resources\RobotModelResource\RelationManagers;
 use App\Models\MechanicalUnitModel;
+use App\Models\Oil;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -37,6 +38,53 @@ class RobotModelResource extends Resource
             Forms\Components\Textarea::make('notes')
                 ->columnSpanFull()
                 ->nullable(),
+
+            Forms\Components\Section::make('Configuración de aceites por eje')
+                ->description('Configure el tipo de aceite y volumen para cada eje del robot')
+                ->schema([
+                    Forms\Components\Repeater::make('axis_oils_config')
+                        ->label('Ejes')
+                        ->schema([
+                            Forms\Components\TextInput::make('axis_number')
+                                ->label('Eje')
+                                ->numeric()
+                                ->minValue(1)
+                                ->maxValue(6)
+                                ->required()
+                                ->default(fn ($state, $get, $set, Forms\Get $get_context) =>
+                                    count($get_context('../../axis_oils_config') ?? []) + 1
+                                ),
+
+                            Forms\Components\Select::make('oil_id')
+                                ->label('Tipo de aceite')
+                                ->options(fn () => Oil::pluck('name', 'id'))
+                                ->searchable()
+                                ->nullable()
+                                ->placeholder('Seleccione un aceite'),
+
+                            Forms\Components\TextInput::make('volume_ml')
+                                ->label('Volumen (ml)')
+                                ->numeric()
+                                ->suffix('ml')
+                                ->minValue(0)
+                                ->step(100)
+                                ->nullable(),
+                        ])
+                        ->columns(3)
+                        ->defaultItems(6)
+                        ->itemLabel(fn (array $state): ?string =>
+                            'Eje ' . ($state['axis_number'] ?? '?') .
+                            (isset($state['volume_ml']) ? ' • ' . $state['volume_ml'] . 'ml' : '')
+                        )
+                        ->collapsible()
+                        ->reorderable(false)
+                        ->deletable(false)
+                        ->addable(false)
+                        ->columnSpanFull(),
+                ])
+                ->collapsible()
+                ->collapsed(fn ($record) => $record !== null)
+                ->columnSpanFull(),
         ])->columns(2);
     }
 
